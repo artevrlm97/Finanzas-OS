@@ -432,7 +432,7 @@
 
         <div class="flex justify-between items-center pt-1">
           <h4 class="text-[11px] font-bold uppercase tracking-wider text-white/50">Movimientos</h4>
-          <span class="text-[10px] text-white/40 font-medium">Mantenga presionado 1s para editar • Deslice para borrar</span>
+          <span class="text-[10px] text-white/40 font-medium">Mantenga presionado 0.7s para editar • Deslice para borrar</span>
         </div>
 
         <div id="walletTransactionsList" class="space-y-1.5 max-h-56 overflow-y-auto pr-0.5"></div>
@@ -1738,13 +1738,13 @@
             }
           });
 
-          if (initialOffset === 0) {
+         if (initialOffset === 0) {
             longPressTimer = setTimeout(() => {
               if (!isSwiping) {
                 if (navigator.vibrate) navigator.vibrate([40, 30, 40]);
                 openEditTransactionModal(txId);
               }
-            }, 1000);
+            }, 700); // 0.7 segundos
           }
         }, { passive: true });
 
@@ -1797,7 +1797,7 @@
         let mouseTimer = null;
         card.addEventListener('mousedown', (e) => {
           if (e.button !== 0) return;
-          mouseTimer = setTimeout(() => openEditTransactionModal(txId), 1000);
+          mouseTimer = setTimeout(() => openEditTransactionModal(txId), 700);
         });
 
         const cancelMouse = () => clearTimeout(mouseTimer);
