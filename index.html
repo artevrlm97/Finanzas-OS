@@ -2,7 +2,7 @@
 <html lang="es" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Finanzas OS</title>
 
   <!-- Metadatos de Aplicación Web para iPhone (PWA) -->
@@ -52,6 +52,16 @@
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
       color: #F5F5F7;
       -webkit-tap-highlight-color: transparent;
+      min-height: 100dvh;
+      overscroll-behavior-y: none;
+      padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+      touch-action: manipulation;
+    }
+    button, select, input { font: inherit; }
+    button { touch-action: manipulation; }
+    button:focus-visible, select:focus-visible, input:focus-visible {
+      outline: 2px solid #0A84FF;
+      outline-offset: 2px;
     }
     .liquid-glass {
       background: rgba(255, 255, 255, 0.03);
@@ -70,6 +80,9 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(15px);
       transition: all 0.15s ease;
+      touch-action: manipulation;
+      -webkit-user-select: none;
+      user-select: none;
     }
     .keypad-btn:active {
       background: rgba(255, 255, 255, 0.2);
@@ -88,22 +101,45 @@
     ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
+    #lockScreenOverlay {
+      min-height: 100dvh;
+      padding-top: max(1.5rem, env(safe-area-inset-top));
+      padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+    }
+    @media (max-width: 380px), (max-height: 700px) {
+      #lockScreenOverlay { justify-content: flex-start; overflow-y: auto; }
+      #lockScreenOverlay > div:first-child { margin-top: 1rem; margin-bottom: 1.25rem; }
+      #passcodeDotsContainer { margin-bottom: 1.25rem; }
+      .keypad-btn { width: 3.5rem; height: 3.5rem; }
+    }
+    @media (max-width: 420px) {
+      .brand-copy, .nav-label { display: none !important; }
+      #currentUserBadge { padding-left: .5rem; padding-right: .5rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen pb-16 select-none text-sm">
 
   <!-- PANTALLA DE SEGURIDAD (PASSCODE DIRECTO SIN SELECCIÓN PREVIA) -->
-  <div id="lockScreenOverlay" class="fixed inset-0 z-[100] bg-[#08090D] backdrop-blur-3xl flex flex-col items-center justify-center p-6 select-none">
+  <div id="lockScreenOverlay" role="dialog" aria-modal="true" aria-labelledby="lockScreenTitle" class="fixed inset-0 z-[100] bg-[#08090D] backdrop-blur-3xl flex flex-col items-center justify-center p-6 select-none">
     <div class="flex flex-col items-center mb-8">
       <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-accentBlue to-indigo-500 flex items-center justify-center shadow-xl shadow-accentBlue/30 mb-3 border border-white/20">
         <i data-lucide="layers" class="w-7 h-7 text-white"></i>
       </div>
-      <h2 class="text-lg font-bold tracking-tight text-white">Finanzas OS</h2>
-      <p id="lockScreenStatusText" class="text-xs text-white/40 mt-0.5">Ingrese su código de acceso</p>
+      <h2 id="lockScreenTitle" class="text-lg font-bold tracking-tight text-white">Finanzas OS</h2>
+      <p id="lockScreenStatusText" aria-live="polite" class="text-xs text-white/40 mt-0.5">Ingrese su código de acceso</p>
     </div>
 
     <!-- Indicador de 4 Dígitos -->
-    <div id="passcodeDotsContainer" class="flex items-center gap-4 mb-8">
+    <div id="passcodeDotsContainer" role="status" aria-label="0 de 4 dígitos ingresados" class="flex items-center gap-4 mb-8">
       <div id="dot-0" class="w-3.5 h-3.5 rounded-full border border-white/30 transition-all duration-150"></div>
       <div id="dot-1" class="w-3.5 h-3.5 rounded-full border border-white/30 transition-all duration-150"></div>
       <div id="dot-2" class="w-3.5 h-3.5 rounded-full border border-white/30 transition-all duration-150"></div>
@@ -112,21 +148,21 @@
 
     <!-- Teclado Numérico -->
     <div class="grid grid-cols-3 gap-x-5 gap-y-3.5 max-w-[280px] w-full">
-      <button type="button" onclick="enterPasscodeDigit('1')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">1</button>
-      <button type="button" onclick="enterPasscodeDigit('2')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">2</button>
-      <button type="button" onclick="enterPasscodeDigit('3')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">3</button>
+      <button type="button" aria-label="Dígito 1" onclick="enterPasscodeDigit('1')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">1</button>
+      <button type="button" aria-label="Dígito 2" onclick="enterPasscodeDigit('2')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">2</button>
+      <button type="button" aria-label="Dígito 3" onclick="enterPasscodeDigit('3')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">3</button>
 
-      <button type="button" onclick="enterPasscodeDigit('4')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">4</button>
-      <button type="button" onclick="enterPasscodeDigit('5')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">5</button>
-      <button type="button" onclick="enterPasscodeDigit('6')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">6</button>
+      <button type="button" aria-label="Dígito 4" onclick="enterPasscodeDigit('4')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">4</button>
+      <button type="button" aria-label="Dígito 5" onclick="enterPasscodeDigit('5')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">5</button>
+      <button type="button" aria-label="Dígito 6" onclick="enterPasscodeDigit('6')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">6</button>
 
-      <button type="button" onclick="enterPasscodeDigit('7')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">7</button>
-      <button type="button" onclick="enterPasscodeDigit('8')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">8</button>
-      <button type="button" onclick="enterPasscodeDigit('9')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">9</button>
+      <button type="button" aria-label="Dígito 7" onclick="enterPasscodeDigit('7')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">7</button>
+      <button type="button" aria-label="Dígito 8" onclick="enterPasscodeDigit('8')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">8</button>
+      <button type="button" aria-label="Dígito 9" onclick="enterPasscodeDigit('9')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">9</button>
 
       <div class="w-16 h-16 mx-auto"></div>
-      <button type="button" onclick="enterPasscodeDigit('0')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">0</button>
-      <button type="button" onclick="deletePasscodeDigit()" class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-white/70 hover:text-white transition active:scale-90">
+      <button type="button" aria-label="Dígito 0" onclick="enterPasscodeDigit('0')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">0</button>
+      <button type="button" aria-label="Borrar último dígito" onclick="deletePasscodeDigit()" class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-white/70 hover:text-white transition active:scale-90">
         <i data-lucide="delete" class="w-6 h-6"></i>
       </button>
     </div>
@@ -141,7 +177,7 @@
           <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-accentBlue to-indigo-500 flex items-center justify-center shadow-md shadow-accentBlue/20">
             <i data-lucide="layers" class="w-4 h-4 text-white"></i>
           </div>
-          <div>
+          <div class="brand-copy">
             <span class="font-bold tracking-tight text-sm block leading-none">Finanzas OS</span>
             <span id="tcBadge" class="text-[10px] text-white/50 cursor-pointer hover:text-white transition mt-0.5 block" onclick="openSettingsModal()">TC: Bs 6.96</span>
           </div>
@@ -151,11 +187,11 @@
         <div class="flex bg-white/5 border border-white/10 rounded-full p-0.5 text-xs">
           <button id="navTabWallets" onclick="switchAppView('wallets')" class="px-3 py-1 rounded-full font-semibold transition flex items-center gap-1 bg-white/15 text-white">
             <i data-lucide="wallet" class="w-3.5 h-3.5"></i>
-            <span class="hidden sm:inline">Billeteras</span>
+            <span class="nav-label hidden sm:inline">Billeteras</span>
           </button>
           <button id="navTabReports" onclick="switchAppView('reports')" class="px-3 py-1 rounded-full font-semibold transition flex items-center gap-1 text-white/50 hover:text-white">
             <i data-lucide="pie-chart" class="w-3.5 h-3.5"></i>
-            <span>Reportes</span>
+            <span class="nav-label">Reportes</span>
           </button>
         </div>
 
@@ -167,7 +203,7 @@
             <i data-lucide="lock" class="w-3.5 h-3.5"></i>
           </button>
 
-          <button onclick="openSettingsModal()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/70">
+          <button onclick="openSettingsModal()" aria-label="Abrir configuración" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/70">
             <i data-lucide="settings" class="w-3.5 h-3.5"></i>
           </button>
         </div>
@@ -414,7 +450,7 @@
       <div class="grid grid-cols-2 gap-2.5">
         <div>
           <label class="text-[10px] text-white/50 uppercase font-semibold">Monto (<span id="txCurrencyLabel">Bs</span>)</label>
-          <input type="number" step="0.01" id="txAmount" placeholder="0.00" class="w-full mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-base font-bold outline-none focus:border-accentBlue text-white">
+          <input type="number" inputmode="decimal" min="0" step="0.01" id="txAmount" placeholder="0.00" class="w-full mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-base font-bold outline-none focus:border-accentBlue text-white">
         </div>
         <div>
           <label class="text-[10px] text-white/50 uppercase font-semibold">Fecha</label>
@@ -648,8 +684,32 @@
       });
     }
 
+    function renderIcons() {
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+      })[character]);
+    }
+
+    function localDateKey(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
     let enteredPasscode = '';
     let isSessionAuthenticated = false;
+    let isVerifyingPasscode = false;
 
     // Catálogo con más de 60 iconos Lucide
     const AVAILABLE_ICONS = [
@@ -740,8 +800,8 @@
       setAppleDate(new Date());
 
       const now = new Date();
-      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-      const todayStr = now.toISOString().split('T')[0];
+      const firstDay = localDateKey(new Date(now.getFullYear(), now.getMonth(), 1));
+      const todayStr = localDateKey(now);
       document.getElementById('reportCustomStartDate').value = firstDay;
       document.getElementById('reportCustomEndDate').value = todayStr;
 
@@ -785,7 +845,7 @@
     }
 
     function enterPasscodeDigit(digit) {
-      if (enteredPasscode.length >= 4) return;
+      if (isVerifyingPasscode || enteredPasscode.length >= 4 || !/^\d$/.test(String(digit))) return;
       enteredPasscode += digit;
       updatePasscodeDots();
 
@@ -795,7 +855,7 @@
     }
 
     function deletePasscodeDigit() {
-      if (enteredPasscode.length > 0) {
+      if (!isVerifyingPasscode && enteredPasscode.length > 0) {
         enteredPasscode = enteredPasscode.slice(0, -1);
         updatePasscodeDots();
       }
@@ -822,11 +882,14 @@
           dot.className = "w-3.5 h-3.5 rounded-full border border-white/30 transition-all duration-150";
         }
       }
+      const dots = document.getElementById('passcodeDotsContainer');
+      if (dots) dots.setAttribute('aria-label', `${enteredPasscode.length} de 4 dígitos ingresados`);
     }
 
     // VERIFICACIÓN ESTRICTA EN SERVIDOR (SIN CLAVES LOCALES)
     async function verifyPasscodeOnServer() {
       const statusText = document.getElementById('lockScreenStatusText');
+      isVerifyingPasscode = true;
       statusText.innerText = "Verificando credenciales...";
 
       if (!isCloudSyncActive || !db) {
@@ -861,14 +924,15 @@
       setTimeout(() => {
         container.classList.remove('shake-animation');
         enteredPasscode = '';
+        isVerifyingPasscode = false;
         updatePasscodeDots(false);
         document.getElementById('lockScreenStatusText').innerText = "Ingrese su código de acceso";
       }, 500);
     }
-    }
 
     function grantAppAccess(user) {
       isSessionAuthenticated = true;
+      isVerifyingPasscode = false;
       currentUser = user;
       enteredPasscode = '';
       updatePasscodeDots();
@@ -881,7 +945,7 @@
 
       // Sincronizar datos únicamente tras autenticación exitosa
       setupFullSync();
-      lucide.createIcons();
+      renderIcons();
     }
 
     function setActiveUserBadge(user) {
@@ -1015,7 +1079,7 @@
         populateReportSelectOptions();
         runAnalyticsEngine();
       }
-      lucide.createIcons();
+      renderIcons();
     }
 
     function renderWallets() {
@@ -1025,8 +1089,8 @@
         const bal = txs.reduce((acc, t) => acc + (t.type === 'income' ? Number(t.amount) : -Number(t.amount)), 0);
         const isUSD = w.currency === 'USD';
         const formatted = isUSD 
-          ? `$${bal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`
-          : `Bs ${bal.toLocaleString('es-BO', { minimumFractionDigits: 2 })}`;
+          ? `$${bal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+          : `Bs ${bal.toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
         return `
           <div onclick="openWalletModal('${w.id}')" class="liquid-glass rounded-2xl p-3 sm:p-4 cursor-pointer hover:bg-white/[0.06] transition border border-white/5 relative group flex flex-col justify-between">
@@ -1045,7 +1109,7 @@
           </div>
         `;
       }).join('');
-      lucide.createIcons();
+      renderIcons();
     }
 
     function updateNetWorth() {
@@ -1061,8 +1125,8 @@
       });
 
       const totalInUSD = exchangeRate > 0 ? (totalInBOB / exchangeRate) : 0;
-      document.getElementById('globalBalanceText').innerText = `Bs ${totalInBOB.toLocaleString('es-BO', { minimumFractionDigits: 2 })}`;
-      document.getElementById('globalBalanceUSDText').innerText = `≈ $${totalInUSD.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD`;
+      document.getElementById('globalBalanceText').innerText = `Bs ${totalInBOB.toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      document.getElementById('globalBalanceUSDText').innerText = `≈ $${totalInUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`;
     }
 
     function setGlobalTimeframe(tf) {
@@ -1075,6 +1139,7 @@
     }
 
     function renderGlobalChart(timeframe) {
+      if (typeof window.Chart === 'undefined') return;
       const ctx = document.getElementById('globalWealthChart').getContext('2d');
       if (globalChartInstance) globalChartInstance.destroy();
 
@@ -1131,7 +1196,7 @@
         populateReportSelectOptions();
         runAnalyticsEngine();
       }
-      lucide.createIcons();
+      renderIcons();
     }
 
     // MOTOR DE REPORTES Y DASHBOARDS
@@ -1240,8 +1305,8 @@
       const totalAmountUSD = exchangeRate > 0 ? (totalAmountBOB / exchangeRate) : 0;
       const percentageOfTotal = overallTotalBOB > 0 ? ((totalAmountBOB / overallTotalBOB) * 100).toFixed(1) : 0;
 
-      document.getElementById('kpiReportTotalAmount').innerText = `Bs ${totalAmountBOB.toLocaleString('es-BO', { minimumFractionDigits: 2 })}`;
-      document.getElementById('kpiReportTotalUSD').innerText = `≈ $${totalAmountUSD.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD`;
+      document.getElementById('kpiReportTotalAmount').innerText = `Bs ${totalAmountBOB.toLocaleString('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      document.getElementById('kpiReportTotalUSD').innerText = `≈ $${totalAmountUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`;
       document.getElementById('kpiReportPercentage').innerText = `${percentageOfTotal}%`;
       document.getElementById('kpiReportTxCount').innerText = filtered.length;
       document.getElementById('reportResultsCountLabel').innerText = `${filtered.length} registro(s) encontrado(s)`;
@@ -1249,10 +1314,11 @@
       renderReportSmartPie(filtered, selectedWallet, selectedCategory);
       renderReportTimelineChart(filtered);
       renderReportTransactionsList(filtered);
-      lucide.createIcons();
+      renderIcons();
     }
 
     function renderReportSmartPie(txList, selectedWallet, selectedCategory) {
+      if (typeof window.Chart === 'undefined') return;
       const pieCtx = document.getElementById('reportDistributionChart').getContext('2d');
       if (reportDistributionChartInstance) reportDistributionChartInstance.destroy();
 
@@ -1329,6 +1395,7 @@
     }
 
     function renderReportTimelineChart(txList) {
+      if (typeof window.Chart === 'undefined') return;
       const barCtx = document.getElementById('reportTimelineChart').getContext('2d');
       if (reportTimelineChartInstance) reportTimelineChartInstance.destroy();
 
@@ -1403,6 +1470,235 @@
           </div>
         `;
       }).join('');
+    }
+
+    // DETALLE Y FILTROS DE CADA BILLETERA
+    function openWalletModal(walletId) {
+      const wallet = wallets.find(item => item.id === walletId);
+      if (!wallet) return;
+
+      selectedWalletId = walletId;
+      currentWalletPeriod = 'current';
+
+      const safeColor = /^#[0-9a-f]{6}$/i.test(wallet.color || '') ? wallet.color : '#0A84FF';
+      const safeIcon = AVAILABLE_ICONS.includes(wallet.icon) ? wallet.icon : 'wallet';
+      document.getElementById('modalWalletTitle').textContent = wallet.name;
+      document.getElementById('modalWalletIcon').innerHTML = `<i data-lucide="${safeIcon}" class="w-5 h-5" style="color:${safeColor}"></i>`;
+
+      const badge = document.getElementById('modalWalletCurrencyBadge');
+      badge.textContent = wallet.currency;
+      badge.className = wallet.currency === 'USD'
+        ? 'text-[9px] px-1.5 py-0.5 rounded font-bold bg-amber-400/10 text-amber-300 border border-amber-400/20'
+        : 'text-[9px] px-1.5 py-0.5 rounded font-bold bg-white/5 text-white/60 border border-white/10';
+
+      populateMonthPickerOptions(walletId);
+      updatePeriodButtonStyles();
+      document.getElementById('walletDetailModal').classList.remove('hidden');
+      renderWalletDetail(walletId);
+      renderIcons();
+    }
+
+    function closeWalletModal() {
+      document.getElementById('walletDetailModal').classList.add('hidden');
+      selectedWalletId = null;
+      if (walletHistoryChartInstance) {
+        walletHistoryChartInstance.destroy();
+        walletHistoryChartInstance = null;
+      }
+      if (walletPieChartInstance) {
+        walletPieChartInstance.destroy();
+        walletPieChartInstance = null;
+      }
+    }
+
+    function populateMonthPickerOptions(walletId) {
+      const picker = document.getElementById('walletMonthPicker');
+      const monthMap = new Map();
+
+      transactions.filter(item => item.walletId === walletId).forEach(item => {
+        const date = new Date(item.date);
+        if (Number.isNaN(date.getTime())) return;
+        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        monthMap.set(key, date.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' }));
+      });
+
+      const now = new Date();
+      const currentKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      if (!monthMap.has(currentKey)) {
+        monthMap.set(currentKey, now.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' }));
+      }
+
+      const options = [...monthMap.keys()].sort().reverse().map(key => {
+        const selected = currentWalletPeriod === key ? ' selected' : '';
+        return `<option value="${key}"${selected}>${escapeHTML(monthMap.get(key))}</option>`;
+      }).join('');
+      picker.innerHTML = `<option value="">Elegir mes…</option>${options}`;
+    }
+
+    function setWalletPeriodFilter(period) {
+      if (!selectedWalletId) return;
+      currentWalletPeriod = period;
+      document.getElementById('walletMonthPicker').value = '';
+      updatePeriodButtonStyles();
+      renderWalletDetail(selectedWalletId);
+    }
+
+    function onWalletMonthPickerChange(value) {
+      if (!selectedWalletId || !/^\d{4}-\d{2}$/.test(value)) return;
+      currentWalletPeriod = value;
+      updatePeriodButtonStyles();
+      renderWalletDetail(selectedWalletId);
+    }
+
+    function updatePeriodButtonStyles() {
+      ['current', 'previous', 'all'].forEach(period => {
+        const button = document.getElementById(`periodBtn-${period}`);
+        if (!button) return;
+        button.className = period === currentWalletPeriod
+          ? 'whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-white/15 text-white'
+          : 'whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold transition text-white/60 hover:text-white bg-white/5';
+      });
+    }
+
+    function getFilteredTransactionsForWallet(walletId) {
+      const walletTransactions = transactions.filter(item => item.walletId === walletId);
+      const now = new Date();
+
+      if (currentWalletPeriod === 'all') return walletTransactions;
+
+      let targetYear = now.getFullYear();
+      let targetMonth = now.getMonth();
+      if (currentWalletPeriod === 'previous') {
+        const previous = new Date(targetYear, targetMonth - 1, 1);
+        targetYear = previous.getFullYear();
+        targetMonth = previous.getMonth();
+      } else if (/^\d{4}-\d{2}$/.test(currentWalletPeriod)) {
+        const [year, month] = currentWalletPeriod.split('-').map(Number);
+        targetYear = year;
+        targetMonth = month - 1;
+      }
+
+      return walletTransactions.filter(item => {
+        const date = new Date(item.date);
+        return !Number.isNaN(date.getTime()) && date.getFullYear() === targetYear && date.getMonth() === targetMonth;
+      });
+    }
+
+    function renderWalletDetail(walletId) {
+      const wallet = wallets.find(item => item.id === walletId);
+      if (!wallet) return;
+
+      const isUSD = wallet.currency === 'USD';
+      const symbol = isUSD ? '$' : 'Bs';
+      const allWalletTransactions = transactions.filter(item => item.walletId === walletId);
+      const totalBalance = allWalletTransactions.reduce((total, item) => {
+        const amount = Number(item.amount) || 0;
+        return total + (item.type === 'income' ? amount : -amount);
+      }, 0);
+      document.getElementById('modalWalletBalance').textContent = `Saldo total: ${symbol} ${totalBalance.toLocaleString(isUSD ? 'en-US' : 'es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+      const filteredTransactions = getFilteredTransactionsForWallet(walletId);
+      const periodExpenses = filteredTransactions.filter(item => item.type === 'expense').reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+      const periodIncomes = filteredTransactions.filter(item => item.type === 'income').reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+      const netFlow = periodIncomes - periodExpenses;
+
+      document.getElementById('periodExpensesTotal').textContent = `${symbol} ${periodExpenses.toFixed(2)}`;
+      document.getElementById('periodIncomesTotal').textContent = `${symbol} ${periodIncomes.toFixed(2)}`;
+      const netFlowElement = document.getElementById('periodNetFlow');
+      netFlowElement.textContent = `${netFlow >= 0 ? '+' : ''}${symbol} ${netFlow.toFixed(2)}`;
+      netFlowElement.className = `text-xs sm:text-sm font-extrabold truncate mt-0.5 ${netFlow >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+
+      const periodLabel = document.getElementById('piePeriodLabel');
+      if (currentWalletPeriod === 'current') periodLabel.textContent = 'Mes actual';
+      else if (currentWalletPeriod === 'previous') periodLabel.textContent = 'Mes anterior';
+      else if (currentWalletPeriod === 'all') periodLabel.textContent = 'Histórico total';
+      else {
+        const [year, month] = currentWalletPeriod.split('-').map(Number);
+        periodLabel.textContent = new Date(year, month - 1, 1).toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
+      }
+
+      const list = document.getElementById('walletTransactionsList');
+      if (!filteredTransactions.length) {
+        list.innerHTML = '<div class="p-6 text-center text-xs text-white/40">Sin movimientos en este período.</div>';
+      } else {
+        let currentHeader = '';
+        list.innerHTML = [...filteredTransactions].sort((a, b) => new Date(b.date) - new Date(a.date)).map(item => {
+          const date = new Date(item.date);
+          const monthHeader = date.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' }).toUpperCase();
+          let header = '';
+          if (currentWalletPeriod === 'all' && monthHeader !== currentHeader) {
+            currentHeader = monthHeader;
+            header = `<div class="sticky top-0 z-10 bg-[#10121B]/95 backdrop-blur-md py-1 px-1 border-b border-white/5"><span class="text-[10px] font-bold text-accentBlue tracking-wider">${escapeHTML(monthHeader)}</span></div>`;
+          }
+
+          const category = categories.find(categoryItem => categoryItem.id === item.categoryId) || { name: 'Varios', icon: 'tag', color: '#8E8E93' };
+          const safeColor = /^#[0-9a-f]{6}$/i.test(category.color || '') ? category.color : '#8E8E93';
+          const safeIcon = AVAILABLE_ICONS.includes(category.icon) ? category.icon : 'tag';
+          const safeId = String(item.id).replace(/[^a-zA-Z0-9_-]/g, '');
+          const isIncome = item.type === 'income';
+          const day = date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+
+          return `${header}
+            <div class="swipe-container relative overflow-hidden rounded-xl select-none">
+              <div class="absolute inset-y-0 right-0 w-20 bg-rose-600 flex items-center justify-center text-white">
+                <button type="button" aria-label="Borrar movimiento" onclick="deleteTransaction('${safeId}')" class="w-full h-full min-h-12 flex flex-col items-center justify-center text-[10px] font-semibold">
+                  <i data-lucide="trash-2" class="w-4 h-4 mb-0.5"></i><span>Borrar</span>
+                </button>
+              </div>
+              <div class="swipe-card relative bg-[#131520] border border-white/5 p-2.5 min-h-14 rounded-xl flex items-center justify-between touch-pan-y" data-id="${safeId}" style="transform:translateX(0px)">
+                <div class="flex items-center gap-2.5 min-w-0 pointer-events-none">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background-color:${safeColor}25;color:${safeColor}"><i data-lucide="${safeIcon}" class="w-3.5 h-3.5"></i></div>
+                  <div class="truncate"><p class="text-xs font-semibold text-white truncate">${escapeHTML(category.name)}</p><p class="text-[10px] text-white/40 truncate">${escapeHTML(day)} • ${escapeHTML(item.user || '')} • ${escapeHTML(item.note || 'Sin nota')}</p></div>
+                </div>
+                <span class="text-xs font-bold shrink-0 ml-2 pointer-events-none ${isIncome ? 'text-emerald-400' : 'text-rose-400'}">${isIncome ? '+' : '-'}${symbol} ${(Number(item.amount) || 0).toFixed(2)}</span>
+              </div>
+            </div>`;
+        }).join('');
+        attachTransactionGestures();
+      }
+
+      renderIcons();
+      if (typeof window.Chart === 'undefined') return;
+
+      const chronological = [...filteredTransactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+      let runningBalance = 0;
+      const historyLabels = chronological.map(item => new Date(item.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }));
+      const historyData = chronological.map(item => {
+        const amount = Number(item.amount) || 0;
+        runningBalance += item.type === 'income' ? amount : -amount;
+        return runningBalance;
+      });
+
+      const historyContext = document.getElementById('walletHistoryChart').getContext('2d');
+      if (walletHistoryChartInstance) walletHistoryChartInstance.destroy();
+      walletHistoryChartInstance = new Chart(historyContext, {
+        type: 'line',
+        data: {
+          labels: historyLabels.length ? historyLabels : ['Sin datos'],
+          datasets: [{ data: historyData.length ? historyData : [0], borderColor: '#30D158', borderWidth: 2, tension: 0.3, pointRadius: historyData.length < 8 ? 2 : 0 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,.35)', font: { size: 9 }, maxTicksLimit: 6 } }, y: { display: false } } }
+      });
+
+      const categoryTotals = {};
+      filteredTransactions.filter(item => item.type === 'expense').forEach(item => {
+        categoryTotals[item.categoryId] = (categoryTotals[item.categoryId] || 0) + (Number(item.amount) || 0);
+      });
+      const categoryIds = Object.keys(categoryTotals);
+      const pieLabels = categoryIds.map(id => escapeHTML((categories.find(item => item.id === id) || {}).name || 'Varios'));
+      const pieData = categoryIds.map(id => categoryTotals[id]);
+      const pieColors = categoryIds.map(id => {
+        const color = (categories.find(item => item.id === id) || {}).color;
+        return /^#[0-9a-f]{6}$/i.test(color || '') ? color : '#8E8E93';
+      });
+
+      const pieContext = document.getElementById('walletPieChart').getContext('2d');
+      if (walletPieChartInstance) walletPieChartInstance.destroy();
+      walletPieChartInstance = new Chart(pieContext, {
+        type: 'doughnut',
+        data: { labels: pieLabels.length ? pieLabels : ['Sin gastos'], datasets: [{ data: pieData.length ? pieData : [1], backgroundColor: pieColors.length ? pieColors : ['rgba(255,255,255,.06)'], borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { display: false }, tooltip: { callbacks: { label(context) { if (!pieData.length) return 'Sin gastos'; const total = pieData.reduce((sum, value) => sum + value, 0); return ` ${context.label}: ${symbol} ${context.parsed.toFixed(2)} (${((context.parsed / total) * 100).toFixed(1)}%)`; } } } } }
+      });
     }
 
     // GESTOS TÁCTILES: 0.7 SEGUNDOS Y DESLIZAMIENTO BIDIRECCIONAL
@@ -1612,7 +1908,7 @@
       }
 
       grid.innerHTML = html;
-      lucide.createIcons();
+      renderIcons();
     }
 
     function selectAppleDate(year, month, day) {
@@ -1703,7 +1999,7 @@
           </div>
         `;
       }).join('');
-      lucide.createIcons();
+      renderIcons();
     }
 
     function selectCategoryForTx(catId) {
@@ -1819,7 +2115,7 @@
           </div>
         </div>
       `).join('');
-      lucide.createIcons();
+      renderIcons();
     }
 
     function renderSettingsCategories() {
@@ -1837,7 +2133,7 @@
           </button>
         </div>
       `).join('');
-      lucide.createIcons();
+      renderIcons();
     }
 
     function openCreateWalletModal() {
@@ -1998,7 +2294,7 @@
             : "w-11 h-11 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/60 transition active:scale-90";
         }
       });
-      lucide.createIcons();
+      renderIcons();
     }
 
     function selectCatIcon(icon) {
@@ -2011,7 +2307,7 @@
             : "w-11 h-11 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/60 transition active:scale-90";
         }
       });
-      lucide.createIcons();
+      renderIcons();
     }
   </script>
 </body>
