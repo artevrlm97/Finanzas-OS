@@ -59,6 +59,24 @@
       -webkit-backdrop-filter: blur(35px);
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
+    .keypad-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      transition: all 0.15s ease;
+    }
+    .keypad-btn:active {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(0.94);
+    }
+    @keyframes appleShake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-12px); }
+      40%, 80% { transform: translateX(12px); }
+    }
+    .shake-animation {
+      animation: appleShake 0.35s ease-in-out;
+    }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     ::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -67,6 +85,53 @@
   </style>
 </head>
 <body class="min-h-screen pb-16 select-none text-sm">
+
+  <div id="lockScreenOverlay" class="fixed inset-0 z-[100] bg-[#08090D]/95 backdrop-blur-3xl flex flex-col items-center justify-center p-6 select-none">
+    
+    <div class="flex flex-col items-center mb-6">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-accentBlue to-indigo-500 flex items-center justify-center shadow-xl shadow-accentBlue/30 mb-3 border border-white/20">
+        <i data-lucide="layers" class="w-7 h-7 text-white"></i>
+      </div>
+      <h2 class="text-lg font-bold tracking-tight text-white">Finanzas OS</h2>
+      <p class="text-xs text-white/40 mt-0.5">Seleccione su usuario e ingrese su código</p>
+    </div>
+
+    <div class="flex items-center bg-white/5 border border-white/10 rounded-full p-1 mb-6">
+      <button id="lockUserRickBtn" onclick="selectLockUser('Rick')" class="px-4 py-1.5 rounded-full text-xs font-semibold transition flex items-center gap-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Rick
+      </button>
+      <button id="lockUserBlueBtn" onclick="selectLockUser('Blue')" class="px-4 py-1.5 rounded-full text-xs font-semibold transition flex items-center gap-1.5 text-white/50">
+        <span class="w-2 h-2 rounded-full bg-sky-400"></span> Blue
+      </button>
+    </div>
+
+    <div id="passcodeDotsContainer" class="flex items-center gap-4 mb-8">
+      <div id="dot-0" class="w-3.5 h-3.5 rounded-full border border-white/30 transition-all duration-150"></div>
+      <div id="dot-1" class="w-3.5 h-3.5 rounded-full border border-white/30 transition-all duration-150"></div>
+      <div id="dot-2" class="w-3.5 h-3.5 rounded-full border border-white/30 transition-all duration-150"></div>
+      <div id="dot-3" class="w-3.5 h-3.5 rounded-full border border-white/30 transition-all duration-150"></div>
+    </div>
+
+    <div class="grid grid-cols-3 gap-x-5 gap-y-3.5 max-w-[280px] w-full">
+      <button type="button" onclick="enterPasscodeDigit('1')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">1</button>
+      <button type="button" onclick="enterPasscodeDigit('2')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">2</button>
+      <button type="button" onclick="enterPasscodeDigit('3')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">3</button>
+
+      <button type="button" onclick="enterPasscodeDigit('4')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">4</button>
+      <button type="button" onclick="enterPasscodeDigit('5')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">5</button>
+      <button type="button" onclick="enterPasscodeDigit('6')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">6</button>
+
+      <button type="button" onclick="enterPasscodeDigit('7')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">7</button>
+      <button type="button" onclick="enterPasscodeDigit('8')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">8</button>
+      <button type="button" onclick="enterPasscodeDigit('9')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">9</button>
+
+      <div class="w-16 h-16 mx-auto"></div>
+      <button type="button" onclick="enterPasscodeDigit('0')" class="keypad-btn w-16 h-16 rounded-full mx-auto flex items-center justify-center text-xl font-medium text-white">0</button>
+      <button type="button" onclick="deletePasscodeDigit()" class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-white/70 hover:text-white transition active:scale-90">
+        <i data-lucide="delete" class="w-6 h-6"></i>
+      </button>
+    </div>
+  </div>
 
   <script>
     const firebaseConfig = {
@@ -116,6 +181,10 @@
             <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> Blue
           </button>
         </div>
+
+        <button onclick="lockApp()" title="Bloquear pantalla" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/70">
+          <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+        </button>
 
         <button onclick="openSettingsModal()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/70">
           <i data-lucide="settings" class="w-3.5 h-3.5"></i>
@@ -302,7 +371,7 @@
         <div class="flex justify-between items-center mb-1">
           <label class="text-[10px] text-white/50 uppercase font-semibold">Categoría</label>
           <button type="button" onclick="openCreateCategoryModal(true)" class="text-[11px] text-accentBlue hover:underline flex items-center gap-0.5 font-medium">
-            <i data-lucide="plus" class="w-3 h-3"></i> Nueva
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Nueva
           </button>
         </div>
         <div id="categoryCardsGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-40 overflow-y-auto p-1.5 bg-black/30 rounded-xl border border-white/5"></div>
@@ -343,7 +412,7 @@
         <div class="flex justify-between items-center">
           <h4 class="text-[10px] font-bold uppercase text-white/50">Billeteras Registradas</h4>
           <button onclick="openNewWalletModal()" class="text-xs text-accentBlue hover:underline flex items-center gap-1 font-medium">
-            <i data-lucide="plus" class="w-3 h-3"></i> Crear Billetera
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Crear Billetera
           </button>
         </div>
         <div id="settingsWalletsList" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
@@ -353,7 +422,7 @@
         <div class="flex justify-between items-center">
           <h4 class="text-[10px] font-bold uppercase text-white/50">Categorías Disponibles</h4>
           <button onclick="openCreateCategoryModal(false)" class="text-xs text-accentBlue hover:underline flex items-center gap-1 font-medium">
-            <i data-lucide="plus" class="w-3 h-3"></i> Crear Categoría
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Crear Categoría
           </button>
         </div>
         <div id="settingsCategoriesList" class="grid grid-cols-2 gap-1.5 max-h-44 overflow-y-auto p-1 bg-black/20 rounded-xl"></div>
@@ -446,6 +515,15 @@
   </div>
 
   <script>
+    // Códigos de acceso por usuario
+    const PASSCODES = {
+      'Rick': '2012',
+      'Blue': '5683'
+    };
+
+    let lockSelectedUser = 'Rick';
+    let enteredPasscode = '';
+
     const AVAILABLE_ICONS = [
       'car', 'zap', 'utensils', 'tv', 'sparkles', 'shopping-bag', 'heart', 'smile',
       'party-popper', 'cross', 'cigarette', 'shopping-cart', 'wine', 'dog', 'gift',
@@ -506,7 +584,7 @@
     let tempSelectedWalletIcon = AVAILABLE_ICONS[0];
     let isCreatingFromTransaction = false;
 
-    // Estado del Calendario Estilo Apple
+    // Estado del Calendario
     let applePickerDate = new Date();
     let applePickerViewYear = applePickerDate.getFullYear();
     let applePickerViewMonth = applePickerDate.getMonth();
@@ -517,14 +595,126 @@
     let walletPieChartInstance = null;
 
     window.addEventListener('DOMContentLoaded', () => {
+      checkAppLock();
       loadState();
       setupDataSync();
       initIconPickers();
-      setActiveUser('Rick');
       updateExchangeRateDisplay();
       renderWallets();
       setAppleDate(new Date());
+
+      // Soporte para entrada física por teclado
+      window.addEventListener('keydown', handlePhysicalKeyboardInput);
     });
+
+    // SISTEMA DE SEGURIDAD Y PANTALLA DE BLOQUEO
+    function checkAppLock() {
+      const unlockedUser = sessionStorage.getItem('finanzas_unlocked_user');
+      const overlay = document.getElementById('lockScreenOverlay');
+      if (unlockedUser && (unlockedUser === 'Rick' || unlockedUser === 'Blue')) {
+        currentUser = unlockedUser;
+        setActiveUser(currentUser);
+        overlay.classList.add('hidden');
+      } else {
+        overlay.classList.remove('hidden');
+        selectLockUser('Rick');
+      }
+    }
+
+    function lockApp() {
+      sessionStorage.removeItem('finanzas_unlocked_user');
+      enteredPasscode = '';
+      updatePasscodeDots();
+      document.getElementById('lockScreenOverlay').classList.remove('hidden');
+      selectLockUser(currentUser);
+    }
+
+    function selectLockUser(user) {
+      lockSelectedUser = user;
+      enteredPasscode = '';
+      updatePasscodeDots();
+
+      const rickBtn = document.getElementById('lockUserRickBtn');
+      const blueBtn = document.getElementById('lockUserBlueBtn');
+
+      if (user === 'Rick') {
+        rickBtn.className = "px-4 py-1.5 rounded-full text-xs font-semibold transition flex items-center gap-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+        blueBtn.className = "px-4 py-1.5 rounded-full text-xs font-semibold transition flex items-center gap-1.5 text-white/50";
+      } else {
+        blueBtn.className = "px-4 py-1.5 rounded-full text-xs font-semibold transition flex items-center gap-1.5 bg-sky-500/20 text-sky-400 border border-sky-500/30";
+        rickBtn.className = "px-4 py-1.5 rounded-full text-xs font-semibold transition flex items-center gap-1.5 text-white/50";
+      }
+    }
+
+    function enterPasscodeDigit(digit) {
+      if (enteredPasscode.length >= 4) return;
+      enteredPasscode += digit;
+      updatePasscodeDots();
+
+      if (enteredPasscode.length === 4) {
+        verifyPasscode();
+      }
+    }
+
+    function deletePasscodeDigit() {
+      if (enteredPasscode.length > 0) {
+        enteredPasscode = enteredPasscode.slice(0, -1);
+        updatePasscodeDots();
+      }
+    }
+
+    function handlePhysicalKeyboardInput(e) {
+      const overlay = document.getElementById('lockScreenOverlay');
+      if (!overlay.classList.contains('hidden')) {
+        if (e.key >= '0' && e.key <= '9') {
+          enterPasscodeDigit(e.key);
+        } else if (e.key === 'Backspace') {
+          deletePasscodeDigit();
+        }
+      }
+    }
+
+    function updatePasscodeDots(isError = false) {
+      for (let i = 0; i < 4; i++) {
+        const dot = document.getElementById(`dot-${i}`);
+        if (isError) {
+          dot.className = "w-3.5 h-3.5 rounded-full bg-rose-500 border border-rose-500 scale-110 transition-all duration-150";
+        } else if (i < enteredPasscode.length) {
+          dot.className = "w-3.5 h-3.5 rounded-full bg-white border border-white scale-105 transition-all duration-150";
+        } else {
+          dot.className = "w-3.5 h-3.5 rounded-full border border-white/30 transition-all duration-150";
+        }
+      }
+    }
+
+    function verifyPasscode() {
+      const correctCode = PASSCODES[lockSelectedUser];
+      if (enteredPasscode === correctCode) {
+        sessionStorage.setItem('finanzas_unlocked_user', lockSelectedUser);
+        currentUser = lockSelectedUser;
+        setActiveUser(currentUser);
+
+        const overlay = document.getElementById('lockScreenOverlay');
+        overlay.classList.add('transition-opacity', 'duration-300', 'opacity-0');
+        setTimeout(() => {
+          overlay.classList.add('hidden');
+          overlay.classList.remove('transition-opacity', 'duration-300', 'opacity-0');
+          enteredPasscode = '';
+          updatePasscodeDots();
+        }, 300);
+      } else {
+        // Respuesta ante contraseña errónea (estilo shake de iOS)
+        const container = document.getElementById('passcodeDotsContainer');
+        updatePasscodeDots(true);
+        container.classList.add('shake-animation');
+
+        setTimeout(() => {
+          container.classList.remove('shake-animation');
+          enteredPasscode = '';
+          updatePasscodeDots(false);
+        }, 500);
+      }
+    }
 
     function setActiveUser(user) {
       currentUser = user;
@@ -1007,7 +1197,6 @@
       const monthName = viewDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
       monthTitleEl.innerText = monthName.charAt(0).toUpperCase() + monthName.slice(1);
 
-      // Primer día de semana del mes (Lunes = 0, ..., Domingo = 6)
       let firstDayIndex = viewDate.getDay() - 1;
       if (firstDayIndex === -1) firstDayIndex = 6;
 
@@ -1019,13 +1208,11 @@
 
       let html = '';
 
-      // Días del mes anterior
       for (let i = firstDayIndex; i > 0; i--) {
         const prevDay = daysInPrevMonth - i + 1;
         html += `<div class="h-8 flex items-center justify-center text-xs text-white/15 cursor-default">${prevDay}</div>`;
       }
 
-      // Días del mes actual
       for (let day = 1; day <= daysInMonth; day++) {
         const isSelected = applePickerDate.getFullYear() === applePickerViewYear &&
                            applePickerDate.getMonth() === applePickerViewMonth &&
@@ -1049,7 +1236,6 @@
         `;
       }
 
-      // Días del siguiente mes para completar las columnas
       const totalRendered = firstDayIndex + daysInMonth;
       const nextDays = (7 - (totalRendered % 7)) % 7;
       for (let i = 1; i <= nextDays; i++) {
