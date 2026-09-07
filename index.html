@@ -87,7 +87,6 @@
 <body class="min-h-screen pb-16 select-none text-sm">
 
   <div id="lockScreenOverlay" class="fixed inset-0 z-[100] bg-[#08090D]/95 backdrop-blur-3xl flex flex-col items-center justify-center p-6 select-none">
-    
     <div class="flex flex-col items-center mb-6">
       <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-accentBlue to-indigo-500 flex items-center justify-center shadow-xl shadow-accentBlue/30 mb-3 border border-white/20">
         <i data-lucide="layers" class="w-7 h-7 text-white"></i>
@@ -156,7 +155,7 @@
         isCloudSyncActive = true;
       }
     } catch (e) {
-      console.warn("Modo local temporalmente activo.");
+      console.warn("Modo local activo.");
     }
   </script>
 
@@ -221,7 +220,7 @@
     <section>
       <div class="flex items-center justify-between mb-2.5 px-0.5">
         <h2 class="text-[11px] font-bold tracking-wider text-white/50 uppercase">Billeteras Compartidas</h2>
-        <button onclick="openNewWalletModal()" class="text-xs text-accentBlue flex items-center gap-1 font-medium hover:underline">
+        <button onclick="openCreateWalletModal()" class="text-xs text-accentBlue flex items-center gap-1 font-medium hover:underline">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i> Nueva
         </button>
       </div>
@@ -298,7 +297,7 @@
 
         <div class="flex justify-between items-center pt-1">
           <h4 class="text-[11px] font-bold uppercase tracking-wider text-white/50">Movimientos</h4>
-          <span class="text-[10px] text-white/40 font-medium">Pulse '+' para registrar</span>
+          <span class="text-[10px] text-white/40 font-medium">Mantenga presionado 2s para editar • Deslice para borrar</span>
         </div>
 
         <div id="walletTransactionsList" class="space-y-1.5 max-h-56 overflow-y-auto pr-0.5"></div>
@@ -315,7 +314,7 @@
   <div id="transactionModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="liquid-modal rounded-t-3xl sm:rounded-3xl w-full max-w-md max-h-[92vh] overflow-y-auto p-4 sm:p-5 space-y-3.5">
       <div class="flex justify-between items-center border-b border-white/10 pb-2.5">
-        <h3 class="font-bold text-base">Registrar Movimiento</h3>
+        <h3 id="txModalTitle" class="font-bold text-base">Registrar Movimiento</h3>
         <button onclick="closeTransactionModal()" class="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center">
           <i data-lucide="x" class="w-3.5 h-3.5"></i>
         </button>
@@ -371,7 +370,7 @@
         <div class="flex justify-between items-center mb-1">
           <label class="text-[10px] text-white/50 uppercase font-semibold">Categoría</label>
           <button type="button" onclick="openCreateCategoryModal(true)" class="text-[11px] text-accentBlue hover:underline flex items-center gap-0.5 font-medium">
-            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Nueva
+            <i data-lucide="plus" class="w-3 h-3"></i> Nueva
           </button>
         </div>
         <div id="categoryCardsGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-40 overflow-y-auto p-1.5 bg-black/30 rounded-xl border border-white/5"></div>
@@ -383,7 +382,7 @@
       </div>
 
       <button onclick="saveTransaction()" class="w-full bg-accentBlue hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl text-sm transition mt-1 shadow-md">
-        Guardar Transacción
+        <span id="saveTxBtnText">Guardar Transacción</span>
       </button>
     </div>
   </div>
@@ -392,7 +391,7 @@
     <div class="liquid-modal rounded-t-3xl sm:rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-4">
       <div class="flex justify-between items-center border-b border-white/10 pb-3">
         <h3 class="font-bold text-base flex items-center gap-2">
-          <i data-lucide="sliders" class="w-4 h-4 text-accentBlue"></i> Configuración
+          <i data-lucide="sliders" class="w-4 h-4 text-accentBlue"></i> Configuración Global
         </h3>
         <button onclick="closeSettingsModal()" class="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center">
           <i data-lucide="x" class="w-3.5 h-3.5"></i>
@@ -400,7 +399,7 @@
       </div>
 
       <div class="bg-white/5 border border-white/10 rounded-xl p-3 space-y-1.5">
-        <label class="text-[10px] font-bold uppercase text-white/50">Tipo de Cambio</label>
+        <label class="text-[10px] font-bold uppercase text-white/50">Tipo de Cambio Sincronizado</label>
         <div class="flex items-center gap-2">
           <span class="text-xs font-medium">1 USD = Bs</span>
           <input type="number" step="0.01" id="settingsExchangeRateInput" class="w-24 bg-black/40 border border-white/15 rounded-lg px-2.5 py-1 text-sm font-bold text-center outline-none focus:border-accentBlue text-white">
@@ -411,36 +410,36 @@
       <div class="space-y-2">
         <div class="flex justify-between items-center">
           <h4 class="text-[10px] font-bold uppercase text-white/50">Billeteras Registradas</h4>
-          <button onclick="openNewWalletModal()" class="text-xs text-accentBlue hover:underline flex items-center gap-1 font-medium">
-            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Crear Billetera
+          <button onclick="openCreateWalletModal()" class="text-xs text-accentBlue hover:underline flex items-center gap-1 font-medium">
+            <i data-lucide="plus" class="w-3 h-3"></i> Crear Billetera
           </button>
         </div>
-        <div id="settingsWalletsList" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
+        <div id="settingsWalletsList" class="space-y-1.5 max-h-48 overflow-y-auto pr-0.5"></div>
       </div>
 
       <div class="space-y-2 pt-1">
         <div class="flex justify-between items-center">
           <h4 class="text-[10px] font-bold uppercase text-white/50">Categorías Disponibles</h4>
           <button onclick="openCreateCategoryModal(false)" class="text-xs text-accentBlue hover:underline flex items-center gap-1 font-medium">
-            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Crear Categoría
+            <i data-lucide="plus" class="w-3 h-3"></i> Crear Categoría
           </button>
         </div>
-        <div id="settingsCategoriesList" class="grid grid-cols-2 gap-1.5 max-h-44 overflow-y-auto p-1 bg-black/20 rounded-xl"></div>
+        <div id="settingsCategoriesList" class="grid grid-cols-2 gap-1.5 max-h-48 overflow-y-auto p-1 bg-black/20 rounded-xl"></div>
       </div>
     </div>
   </div>
 
   <div id="createWalletModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="liquid-modal rounded-t-3xl sm:rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-5 space-y-3">
+    <div class="liquid-modal rounded-t-3xl sm:rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-5 space-y-3.5">
       <div class="flex justify-between items-center border-b border-white/10 pb-2.5">
-        <h3 class="font-bold text-base">Nueva Billetera</h3>
-        <button onclick="closeNewWalletModal()" class="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center">
+        <h3 id="walletModalTitle" class="font-bold text-base">Nueva Billetera</h3>
+        <button onclick="closeWalletConfigModal()" class="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center">
           <i data-lucide="x" class="w-3.5 h-3.5"></i>
         </button>
       </div>
 
       <div>
-        <label class="text-[10px] text-white/50 uppercase font-semibold">Nombre</label>
+        <label class="text-[10px] text-white/50 uppercase font-semibold">Nombre de la Billetera</label>
         <input type="text" id="newWalletName" placeholder="Ej. Negocios, Inversión" class="w-full mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:border-accentBlue text-white">
       </div>
 
@@ -453,7 +452,7 @@
           </select>
         </div>
         <div>
-          <label class="text-[10px] text-white/50 uppercase font-semibold">Color</label>
+          <label class="text-[10px] text-white/50 uppercase font-semibold">Color Identificador</label>
           <div class="flex items-center gap-2 mt-1">
             <input type="color" id="newWalletColor" value="#0A84FF" class="bg-transparent border-0 w-8 h-8 rounded-lg cursor-pointer">
             <span class="text-xs text-white/60">Acento</span>
@@ -462,27 +461,30 @@
       </div>
 
       <div>
-        <label class="text-[10px] text-white/50 uppercase font-semibold">Ícono (+60 disponibles)</label>
-        <div id="walletIconPickerGrid" class="grid grid-cols-8 gap-1.5 mt-1.5 max-h-32 overflow-y-auto p-2 bg-white/5 rounded-xl border border-white/10"></div>
+        <div class="flex justify-between items-center mb-1">
+          <label class="text-[10px] text-white/50 uppercase font-semibold">Seleccionar Ícono</label>
+          <span class="text-[10px] text-accentBlue font-medium">Toque para asignar</span>
+        </div>
+        <div id="walletIconPickerGrid" class="grid grid-cols-6 sm:grid-cols-8 gap-2 p-2.5 max-h-48 overflow-y-auto bg-black/30 rounded-2xl border border-white/10"></div>
       </div>
 
-      <button onclick="createWalletSubmit()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 rounded-xl text-sm transition mt-1">
-        Crear Billetera
+      <button onclick="saveWalletSubmit()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 rounded-xl text-sm transition mt-1 shadow-md">
+        <span id="saveWalletBtnText">Crear Billetera</span>
       </button>
     </div>
   </div>
 
   <div id="createCategoryModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="liquid-modal rounded-t-3xl sm:rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-5 space-y-3">
+    <div class="liquid-modal rounded-t-3xl sm:rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-5 space-y-3.5">
       <div class="flex justify-between items-center border-b border-white/10 pb-2.5">
-        <h3 class="font-bold text-base">Nueva Categoría</h3>
-        <button onclick="closeCreateCategoryModal()" class="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center">
+        <h3 id="categoryModalTitle" class="font-bold text-base">Nueva Categoría</h3>
+        <button onclick="closeCategoryConfigModal()" class="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center">
           <i data-lucide="x" class="w-3.5 h-3.5"></i>
         </button>
       </div>
 
       <div>
-        <label class="text-[10px] text-white/50 uppercase font-semibold">Nombre</label>
+        <label class="text-[10px] text-white/50 uppercase font-semibold">Nombre de Categoría</label>
         <input type="text" id="newCatName" placeholder="Ej. Veterinaria, Licencias..." class="w-full mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm outline-none text-white focus:border-accentBlue">
       </div>
 
@@ -504,18 +506,31 @@
       </div>
 
       <div>
-        <label class="text-[10px] text-white/50 uppercase font-semibold">Seleccionar Ícono</label>
-        <div id="categoryIconPickerGrid" class="grid grid-cols-8 gap-1.5 mt-1.5 max-h-32 overflow-y-auto p-2 bg-white/5 rounded-xl border border-white/10"></div>
+        <div class="flex justify-between items-center mb-1">
+          <label class="text-[10px] text-white/50 uppercase font-semibold">Seleccionar Ícono</label>
+          <span class="text-[10px] text-accentBlue font-medium">Toque para asignar</span>
+        </div>
+        <div id="categoryIconPickerGrid" class="grid grid-cols-6 sm:grid-cols-8 gap-2 p-2.5 max-h-48 overflow-y-auto bg-black/30 rounded-2xl border border-white/10"></div>
       </div>
 
-      <button onclick="createCategorySubmit()" class="w-full bg-accentBlue hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl text-sm transition mt-1">
-        Guardar Categoría
+      <button onclick="saveCategorySubmit()" class="w-full bg-accentBlue hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl text-sm transition mt-1 shadow-md">
+        <span id="saveCatBtnText">Guardar Categoría</span>
       </button>
     </div>
   </div>
 
   <script>
-    // Códigos de acceso por usuario
+    // Generador universal de UUIDs estándar v4
+    function generateUUID() {
+      if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+      }
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
     const PASSCODES = {
       'Rick': '2012',
       'Blue': '5683'
@@ -524,6 +539,7 @@
     let lockSelectedUser = 'Rick';
     let enteredPasscode = '';
 
+    // Catálogo con más de 60 iconos Lucide
     const AVAILABLE_ICONS = [
       'car', 'zap', 'utensils', 'tv', 'sparkles', 'shopping-bag', 'heart', 'smile',
       'party-popper', 'cross', 'cigarette', 'shopping-cart', 'wine', 'dog', 'gift',
@@ -537,54 +553,61 @@
       'trending-up', 'activity', 'bookmark', 'calendar', 'compass', 'feather'
     ];
 
+    // Billeteras predeterminadas con UUIDs universales fijos
     const DEFAULT_WALLETS = [
-      { id: 'vivir', name: 'Vivir', currency: 'BOB', icon: 'home', color: '#0A84FF' },
-      { id: 'deudas', name: 'Deudas', currency: 'BOB', icon: 'receipt', color: '#FF453A' },
-      { id: 'extras_rick', name: 'Extras Rick', currency: 'BOB', icon: 'user', color: '#30D158' },
-      { id: 'extras_blue', name: 'Extras Blue', currency: 'BOB', icon: 'heart', color: '#BF5AF2' },
-      { id: 'ahorro', name: 'Ahorro', currency: 'USD', icon: 'shield', color: '#FFD60A' }
+      { id: '10000000-0000-4000-8000-000000000001', name: 'Vivir', currency: 'BOB', icon: 'home', color: '#0A84FF' },
+      { id: '10000000-0000-4000-8000-000000000002', name: 'Deudas', currency: 'BOB', icon: 'receipt', color: '#FF453A' },
+      { id: '10000000-0000-4000-8000-000000000003', name: 'Extras Rick', currency: 'BOB', icon: 'user', color: '#30D158' },
+      { id: '10000000-0000-4000-8000-000000000004', name: 'Extras Blue', currency: 'BOB', icon: 'heart', color: '#BF5AF2' },
+      { id: '10000000-0000-4000-8000-000000000005', name: 'Ahorro', currency: 'USD', icon: 'shield', color: '#FFD60A' }
     ];
 
+    // Categorías predeterminadas con UUIDs universales fijos
     const DEFAULT_CATEGORIES = [
-      { id: 'taxi', name: 'Taxi', type: 'expense', icon: 'car', color: '#FF9F0A' },
-      { id: 'luz', name: 'Luz', type: 'expense', icon: 'zap', color: '#FFD60A' },
-      { id: 'comida', name: 'Comida', type: 'expense', icon: 'utensils', color: '#FF453A' },
-      { id: 'streaming', name: 'Streaming Doña Claudia', type: 'expense', icon: 'tv', color: '#BF5AF2' },
-      { id: 'limpieza', name: 'Insumos Limpieza', type: 'expense', icon: 'sparkles', color: '#64D2FF' },
-      { id: 'shopping', name: 'Shopping', type: 'expense', icon: 'shopping-bag', color: '#FF375F' },
-      { id: 'makeup', name: 'Makeup', type: 'expense', icon: 'smile', color: '#FF6482' },
-      { id: 'personal', name: 'Cuidado Personal', type: 'expense', icon: 'heart', color: '#AC8E68' },
-      { id: 'entretenimiento', name: 'Entretenimiento', type: 'expense', icon: 'party-popper', color: '#5E5CE6' },
-      { id: 'diseca', name: 'Diseca', type: 'expense', icon: 'receipt', color: '#98989D' },
-      { id: 'salud', name: 'Salud', type: 'expense', icon: 'cross', color: '#30D158' },
-      { id: 'tabaco', name: 'Tabaco y Vape', type: 'expense', icon: 'cigarette', color: '#8E8E93' },
-      { id: 'supermercado', name: 'Supermercado', type: 'expense', icon: 'shopping-cart', color: '#32D74B' },
-      { id: 'delicor', name: 'Delicor', type: 'expense', icon: 'wine', color: '#AF52DE' },
-      { id: 'coco', name: 'Coco (Perro)', type: 'expense', icon: 'dog', color: '#E0A367' },
-      { id: 'bonos', name: 'Bonos', type: 'expense', icon: 'gift', color: '#FFD60A' },
-      { id: 'servicios_online', name: 'Servicios Online', type: 'expense', icon: 'globe', color: '#0A84FF' },
-      { id: 'impuestos', name: 'Impuestos', type: 'expense', icon: 'receipt', color: '#FF453A' },
-      { id: 'seguros', name: 'Seguros de Salud', type: 'expense', icon: 'shield', color: '#30D158' },
-      { id: 'restotech', name: 'Restotech', type: 'expense', icon: 'cpu', color: '#64D2FF' },
-      { id: 'negocios', name: 'Negocios', type: 'income', icon: 'briefcase', color: '#30D158' },
-      { id: 'otros', name: 'Otros', type: 'income', icon: 'wallet', color: '#0A84FF' }
+      { id: '20000000-0000-4000-8000-000000000001', name: 'Taxi', type: 'expense', icon: 'car', color: '#FF9F0A' },
+      { id: '20000000-0000-4000-8000-000000000002', name: 'Luz', type: 'expense', icon: 'zap', color: '#FFD60A' },
+      { id: '20000000-0000-4000-8000-000000000003', name: 'Comida', type: 'expense', icon: 'utensils', color: '#FF453A' },
+      { id: '20000000-0000-4000-8000-000000000004', name: 'Streaming Doña Claudia', type: 'expense', icon: 'tv', color: '#BF5AF2' },
+      { id: '20000000-0000-4000-8000-000000000005', name: 'Insumos Limpieza', type: 'expense', icon: 'sparkles', color: '#64D2FF' },
+      { id: '20000000-0000-4000-8000-000000000006', name: 'Shopping', type: 'expense', icon: 'shopping-bag', color: '#FF375F' },
+      { id: '20000000-0000-4000-8000-000000000007', name: 'Makeup', type: 'expense', icon: 'smile', color: '#FF6482' },
+      { id: '20000000-0000-4000-8000-000000000008', name: 'Cuidado Personal', type: 'expense', icon: 'heart', color: '#AC8E68' },
+      { id: '20000000-0000-4000-8000-000000000009', name: 'Entretenimiento', type: 'expense', icon: 'party-popper', color: '#5E5CE6' },
+      { id: '20000000-0000-4000-8000-000000000010', name: 'Diseca', type: 'expense', icon: 'receipt', color: '#98989D' },
+      { id: '20000000-0000-4000-8000-000000000011', name: 'Salud', type: 'expense', icon: 'cross', color: '#30D158' },
+      { id: '20000000-0000-4000-8000-000000000012', name: 'Tabaco y Vape', type: 'expense', icon: 'cigarette', color: '#8E8E93' },
+      { id: '20000000-0000-4000-8000-000000000013', name: 'Supermercado', type: 'expense', icon: 'shopping-cart', color: '#32D74B' },
+      { id: '20000000-0000-4000-8000-000000000014', name: 'Delicor', type: 'expense', icon: 'wine', color: '#AF52DE' },
+      { id: '20000000-0000-4000-8000-000000000015', name: 'Coco (Perro)', type: 'expense', icon: 'dog', color: '#E0A367' },
+      { id: '20000000-0000-4000-8000-000000000016', name: 'Bonos', type: 'expense', icon: 'gift', color: '#FFD60A' },
+      { id: '20000000-0000-4000-8000-000000000017', name: 'Servicios Online', type: 'expense', icon: 'globe', color: '#0A84FF' },
+      { id: '20000000-0000-4000-8000-000000000018', name: 'Impuestos', type: 'expense', icon: 'receipt', color: '#FF453A' },
+      { id: '20000000-0000-4000-8000-000000000019', name: 'Seguros de Salud', type: 'expense', icon: 'shield', color: '#30D158' },
+      { id: '20000000-0000-4000-8000-000000000020', name: 'Restotech', type: 'expense', icon: 'cpu', color: '#64D2FF' },
+      { id: '20000000-0000-4000-8000-000000000021', name: 'Negocios', type: 'income', icon: 'briefcase', color: '#30D158' },
+      { id: '20000000-0000-4000-8000-000000000022', name: 'Otros', type: 'income', icon: 'wallet', color: '#0A84FF' }
     ];
 
     let currentUser = 'Rick';
     let exchangeRate = 6.96;
-    let wallets = [...DEFAULT_WALLETS];
-    let categories = [...DEFAULT_CATEGORIES];
+    let wallets = [];
+    let categories = [];
     let transactions = [];
     let selectedWalletId = null;
     let currentTxType = 'expense';
     let selectedCategoryId = null;
+
+    // Estados de edición
+    let editingTxId = null;
+    let editingWalletId = null;
+    let editingCategoryId = null;
 
     let currentWalletPeriod = 'current';
     let tempSelectedCatIcon = AVAILABLE_ICONS[0];
     let tempSelectedWalletIcon = AVAILABLE_ICONS[0];
     let isCreatingFromTransaction = false;
 
-    // Estado del Calendario
+    // Calendario Apple
     let applePickerDate = new Date();
     let applePickerViewYear = applePickerDate.getFullYear();
     let applePickerViewMonth = applePickerDate.getMonth();
@@ -596,18 +619,14 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       checkAppLock();
-      loadState();
-      setupDataSync();
       initIconPickers();
-      updateExchangeRateDisplay();
-      renderWallets();
+      setupFullSync();
       setAppleDate(new Date());
 
-      // Soporte para entrada física por teclado
       window.addEventListener('keydown', handlePhysicalKeyboardInput);
     });
 
-    // SISTEMA DE SEGURIDAD Y PANTALLA DE BLOQUEO
+    // PANTALLA DE BLOQUEO
     function checkAppLock() {
       const unlockedUser = sessionStorage.getItem('finanzas_unlocked_user');
       const overlay = document.getElementById('lockScreenOverlay');
@@ -703,7 +722,6 @@
           updatePasscodeDots();
         }, 300);
       } else {
-        // Respuesta ante contraseña errónea (estilo shake de iOS)
         const container = document.getElementById('passcodeDotsContainer');
         updatePasscodeDots(true);
         container.classList.add('shake-animation');
@@ -729,26 +747,71 @@
       }
     }
 
-    function loadState() {
-      const storedTC = localStorage.getItem('lw_tc');
-      if (storedTC) exchangeRate = parseFloat(storedTC);
-
-      const storedWallets = localStorage.getItem('lw_wallets');
-      if (storedWallets) wallets = JSON.parse(storedWallets);
-
-      const storedCats = localStorage.getItem('lw_cats');
-      if (storedCats) categories = JSON.parse(storedCats);
-    }
-
-    function setupDataSync() {
+    // SINCRONIZACIÓN EN TIEMPO REAL MULTI-ENTIDAD (FIRESTORE / LOCAL)
+    function setupFullSync() {
       if (isCloudSyncActive && db) {
-        db.collection('transactions').orderBy('date', 'desc').onSnapshot(snapshot => {
+        // 1. Sincronizar Billeteras
+        db.collection('wallets').onSnapshot(async (snapshot) => {
+          if (snapshot.empty) {
+            // Inicializar Firestore con billeteras predeterminadas
+            const batch = db.batch();
+            DEFAULT_WALLETS.forEach(w => {
+              batch.set(db.collection('wallets').doc(w.id), w);
+            });
+            await batch.commit();
+          } else {
+            wallets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            refreshAppViews();
+          }
+        });
+
+        // 2. Sincronizar Categorías
+        db.collection('categories').onSnapshot(async (snapshot) => {
+          if (snapshot.empty) {
+            // Inicializar Firestore con categorías predeterminadas
+            const batch = db.batch();
+            DEFAULT_CATEGORIES.forEach(c => {
+              batch.set(db.collection('categories').doc(c.id), c);
+            });
+            await batch.commit();
+          } else {
+            categories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            refreshAppViews();
+          }
+        });
+
+        // 3. Sincronizar Transacciones
+        db.collection('transactions').orderBy('date', 'desc').onSnapshot((snapshot) => {
           transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           refreshAppViews();
         });
+
+        // 4. Sincronizar Tipo de Cambio
+        db.collection('settings').doc('config').onSnapshot((doc) => {
+          if (doc.exists && doc.data().exchangeRate) {
+            exchangeRate = parseFloat(doc.data().exchangeRate);
+            updateExchangeRateDisplay();
+            refreshAppViews();
+          } else {
+            db.collection('settings').doc('config').set({ exchangeRate: 6.96 }, { merge: true });
+          }
+        });
+
       } else {
+        // Fallback Almacenamiento Local
+        const storedWallets = localStorage.getItem('lw_wallets');
+        wallets = storedWallets ? JSON.parse(storedWallets) : [...DEFAULT_WALLETS];
+
+        const storedCats = localStorage.getItem('lw_cats');
+        categories = storedCats ? JSON.parse(storedCats) : [...DEFAULT_CATEGORIES];
+
         const storedTxs = localStorage.getItem('lw_transactions');
         transactions = storedTxs ? JSON.parse(storedTxs) : generateMockData();
+
+        const storedTC = localStorage.getItem('lw_tc');
+        if (storedTC) exchangeRate = parseFloat(storedTC);
+
+        updateExchangeRateDisplay();
         refreshAppViews();
       }
     }
@@ -759,12 +822,12 @@
       const currentYear = now.getFullYear();
       const currentMonth = now.getMonth();
 
-      wallets.forEach(w => {
+      DEFAULT_WALLETS.forEach(w => {
         const isUSD = w.currency === 'USD';
         list.push({
-          id: 'tx-cm-1-' + Math.random(),
+          id: generateUUID(),
           walletId: w.id,
-          categoryId: 'negocios',
+          categoryId: DEFAULT_CATEGORIES[20].id, // Negocios
           type: 'income',
           amount: isUSD ? 2500 : 14000,
           date: new Date(currentYear, currentMonth, 3).toISOString(),
@@ -772,9 +835,9 @@
           user: 'Rick'
         });
         list.push({
-          id: 'tx-cm-2-' + Math.random(),
+          id: generateUUID(),
           walletId: w.id,
-          categoryId: 'supermercado',
+          categoryId: DEFAULT_CATEGORIES[12].id, // Supermercado
           type: 'expense',
           amount: isUSD ? 180 : 920,
           date: new Date(currentYear, currentMonth, 5).toISOString(),
@@ -793,6 +856,8 @@
         populateMonthPickerOptions(selectedWalletId);
         renderWalletDetail(selectedWalletId);
       }
+      renderSettingsWallets();
+      renderSettingsCategories();
       lucide.createIcons();
     }
 
@@ -895,6 +960,8 @@
       selectedWalletId = walletId;
       currentWalletPeriod = 'current';
       const wallet = wallets.find(w => w.id === walletId);
+      if (!wallet) return;
+
       document.getElementById('modalWalletTitle').innerText = wallet.name;
       document.getElementById('modalWalletIcon').innerHTML = `<i data-lucide="${wallet.icon}" style="color: ${wallet.color}"></i>`;
       
@@ -1010,6 +1077,7 @@
 
     function renderWalletDetail(walletId) {
       const wallet = wallets.find(w => w.id === walletId);
+      if (!wallet) return;
       const isUSD = wallet.currency === 'USD';
       const symbol = isUSD ? '$' : 'Bs';
 
@@ -1060,34 +1128,46 @@
           if (currentWalletPeriod === 'all' && formattedHeader !== currentMonthHeader) {
             currentMonthHeader = formattedHeader;
             listHTML += `
-              <div class="sticky top-0 bg-[#10121B]/95 backdrop-blur-md py-1 px-1 border-b border-white/5">
+              <div class="sticky top-0 bg-[#10121B]/95 backdrop-blur-md py-1 px-1 border-b border-white/5 z-20">
                 <span class="text-[10px] font-bold text-accentBlue tracking-wider">${currentMonthHeader}</span>
               </div>
             `;
           }
 
+          // Localización dinámica de categoría por UUID
           const cat = categories.find(c => c.id === t.categoryId) || { name: 'Varios', icon: 'tag', color: '#999' };
           const isInc = t.type === 'income';
           const dayFormatted = tDate.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
 
           listHTML += `
-            <div class="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/5 hover:bg-white/[0.08] transition">
-              <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-xs" style="background-color: ${cat.color}25; color: ${cat.color};">
-                  <i data-lucide="${cat.icon}" class="w-3.5 h-3.5"></i>
-                </div>
-                <div class="truncate">
-                  <p class="text-xs font-semibold text-white truncate">${cat.name}</p>
-                  <p class="text-[10px] text-white/40 truncate">${dayFormatted} • ${t.user} • ${t.note || 'Sin nota'}</p>
-                </div>
+            <div class="swipe-container relative overflow-hidden rounded-xl select-none" id="swipe-box-${t.id}">
+              <div class="absolute inset-y-0 right-0 w-20 bg-rose-600 flex items-center justify-center text-white rounded-r-xl z-0">
+                <button type="button" onclick="deleteTransaction('${t.id}')" class="w-full h-full flex flex-col items-center justify-center text-xs font-semibold active:bg-rose-700 transition">
+                  <i data-lucide="trash-2" class="w-4 h-4 mb-0.5"></i>
+                  <span>Borrar</span>
+                </button>
               </div>
-              <span class="text-xs font-bold shrink-0 ml-2 ${isInc ? 'text-emerald-400' : 'text-rose-400'}">
-                ${isInc ? '+' : '-'}${symbol} ${Number(t.amount).toFixed(2)}
-              </span>
+              <div class="swipe-card relative bg-[#131520] border border-white/5 p-2.5 rounded-xl flex items-center justify-between transition-transform duration-150 z-10 cursor-pointer active:scale-[0.99]"
+                   data-id="${t.id}"
+                   style="transform: translateX(0px);">
+                <div class="flex items-center gap-2.5 min-w-0 pointer-events-none">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-xs" style="background-color: ${cat.color}25; color: ${cat.color};">
+                    <i data-lucide="${cat.icon}" class="w-3.5 h-3.5"></i>
+                  </div>
+                  <div class="truncate">
+                    <p class="text-xs font-semibold text-white truncate">${cat.name}</p>
+                    <p class="text-[10px] text-white/40 truncate">${dayFormatted} • ${t.user} • ${t.note || 'Sin nota'}</p>
+                  </div>
+                </div>
+                <span class="text-xs font-bold shrink-0 ml-2 pointer-events-none ${isInc ? 'text-emerald-400' : 'text-rose-400'}">
+                  ${isInc ? '+' : '-'}${symbol} ${Number(t.amount).toFixed(2)}
+                </span>
+              </div>
             </div>
           `;
         });
         listEl.innerHTML = listHTML;
+        attachTransactionGestures();
       }
 
       const histCtx = document.getElementById('walletHistoryChart').getContext('2d');
@@ -1124,7 +1204,7 @@
         catTotals[t.categoryId] = (catTotals[t.categoryId] || 0) + Number(t.amount);
       });
 
-      const pieLabels = Object.keys(catTotals).map(cid => (categories.find(c => c.id === cid) || {}).name || cid);
+      const pieLabels = Object.keys(catTotals).map(cid => (categories.find(c => c.id === cid) || {}).name || 'Varios');
       const pieData = Object.values(catTotals);
       const pieColors = Object.keys(catTotals).map(cid => (categories.find(c => c.id === cid) || {}).color || '#8E8E93');
 
@@ -1162,7 +1242,120 @@
       lucide.createIcons();
     }
 
-    // GESTIÓN DEL SELECTOR DE FECHA ESTILO APPLE
+    // GESTOS TÁCTILES: PULSACIÓN PROLONGADA (2s) Y DESLIZAMIENTO A LA IZQUIERDA
+    function attachTransactionGestures() {
+      const cards = document.querySelectorAll('.swipe-card');
+      cards.forEach(card => {
+        let startX = 0;
+        let startY = 0;
+        let isSwiping = false;
+        let longPressTimer = null;
+        const txId = card.getAttribute('data-id');
+
+        card.addEventListener('touchstart', (e) => {
+          startX = e.touches[0].clientX;
+          startY = e.touches[0].clientY;
+          isSwiping = false;
+
+          cards.forEach(other => {
+            if (other !== card) other.style.transform = 'translateX(0px)';
+          });
+
+          longPressTimer = setTimeout(() => {
+            if (!isSwiping) {
+              if (navigator.vibrate) navigator.vibrate([40, 30, 40]);
+              openEditTransactionModal(txId);
+            }
+          }, 2000);
+        }, { passive: true });
+
+        card.addEventListener('touchmove', (e) => {
+          const currentX = e.touches[0].clientX;
+          const currentY = e.touches[0].clientY;
+          const diffX = currentX - startX;
+          const diffY = currentY - startY;
+
+          if (Math.hypot(diffX, diffY) > 8) {
+            clearTimeout(longPressTimer);
+          }
+
+          if (Math.abs(diffX) > Math.abs(diffY) && diffX < 0) {
+            isSwiping = true;
+            card.style.transition = 'none';
+            const move = Math.max(-80, diffX);
+            card.style.transform = `translateX(${move}px)`;
+          }
+        }, { passive: true });
+
+        const onTouchEnd = () => {
+          clearTimeout(longPressTimer);
+          card.style.transition = 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)';
+          const match = card.style.transform.match(/translateX\((-?\d+\.?\d*)px\)/);
+          const currentX = match ? parseFloat(match[1]) : 0;
+
+          if (currentX < -40) {
+            card.style.transform = 'translateX(-80px)';
+          } else {
+            card.style.transform = 'translateX(0px)';
+          }
+        };
+
+        card.addEventListener('touchend', onTouchEnd);
+        card.addEventListener('touchcancel', onTouchEnd);
+
+        // Soporte de pulsación sostenida en escritorio
+        let mouseTimer = null;
+        card.addEventListener('mousedown', (e) => {
+          if (e.button !== 0) return;
+          mouseTimer = setTimeout(() => {
+            openEditTransactionModal(txId);
+          }, 2000);
+        });
+
+        const cancelMouse = () => clearTimeout(mouseTimer);
+        card.addEventListener('mouseup', cancelMouse);
+        card.addEventListener('mouseleave', cancelMouse);
+      });
+    }
+
+    function openEditTransactionModal(txId) {
+      const tx = transactions.find(t => t.id === txId);
+      if (!tx) return;
+      editingTxId = txId;
+
+      const wallet = wallets.find(w => w.id === tx.walletId);
+      document.getElementById('txCurrencyLabel').innerText = wallet ? wallet.currency : 'Bs';
+      document.getElementById('txAmount').value = tx.amount;
+      document.getElementById('txNote').value = tx.note || '';
+
+      setAppleDate(new Date(tx.date));
+      isAppleDatePickerOpen = false;
+      document.getElementById('appleInlineCalendar').classList.add('hidden');
+      document.getElementById('appleDateChevron').style.transform = 'rotate(0deg)';
+
+      setTxType(tx.type);
+      selectedCategoryId = tx.categoryId;
+      renderCategorySelectorGrid();
+
+      document.getElementById('txModalTitle').innerText = 'Editar Movimiento';
+      document.getElementById('saveTxBtnText').innerText = 'Guardar Cambios';
+
+      document.getElementById('transactionModal').classList.remove('hidden');
+    }
+
+    async function deleteTransaction(txId) {
+      if (!confirm('¿Desea eliminar esta transacción de forma definitiva?')) return;
+
+      if (isCloudSyncActive && db) {
+        await db.collection('transactions').doc(txId).delete();
+      } else {
+        transactions = transactions.filter(t => t.id !== txId);
+        localStorage.setItem('lw_transactions', JSON.stringify(transactions));
+        refreshAppViews();
+      }
+    }
+
+    // CALENDARIO ESTILO APPLE
     function toggleAppleDatePicker() {
       const cal = document.getElementById('appleInlineCalendar');
       const chev = document.getElementById('appleDateChevron');
@@ -1285,6 +1478,7 @@
     }
 
     function openTransactionModal() {
+      editingTxId = null;
       const wallet = wallets.find(w => w.id === selectedWalletId);
       document.getElementById('txCurrencyLabel').innerText = wallet ? wallet.currency : 'Bs';
       document.getElementById('txAmount').value = '';
@@ -1295,12 +1489,16 @@
       document.getElementById('appleInlineCalendar').classList.add('hidden');
       document.getElementById('appleDateChevron').style.transform = 'rotate(0deg)';
 
+      document.getElementById('txModalTitle').innerText = 'Registrar Movimiento';
+      document.getElementById('saveTxBtnText').innerText = 'Guardar Transacción';
+
       renderCategorySelectorGrid();
       document.getElementById('transactionModal').classList.remove('hidden');
     }
 
     function closeTransactionModal() {
       document.getElementById('transactionModal').classList.add('hidden');
+      editingTxId = null;
     }
 
     function setTxType(type) {
@@ -1353,28 +1551,55 @@
 
       const txDateObj = dateVal ? new Date(dateVal + 'T12:00:00') : new Date();
 
-      const newTx = {
-        walletId: selectedWalletId,
-        categoryId: selectedCategoryId,
-        type: currentTxType,
-        amount: amount,
-        note: note,
-        user: currentUser,
-        date: txDateObj.toISOString()
-      };
-
-      if (isCloudSyncActive && db) {
-        await db.collection('transactions').add(newTx);
+      if (editingTxId) {
+        if (isCloudSyncActive && db) {
+          await db.collection('transactions').doc(editingTxId).update({
+            categoryId: selectedCategoryId,
+            type: currentTxType,
+            amount: amount,
+            note: note,
+            date: txDateObj.toISOString()
+          });
+        } else {
+          const idx = transactions.findIndex(t => t.id === editingTxId);
+          if (idx !== -1) {
+            transactions[idx] = {
+              ...transactions[idx],
+              categoryId: selectedCategoryId,
+              type: currentTxType,
+              amount: amount,
+              note: note,
+              date: txDateObj.toISOString()
+            };
+            localStorage.setItem('lw_transactions', JSON.stringify(transactions));
+            refreshAppViews();
+          }
+        }
       } else {
-        newTx.id = 'tx-' + Date.now();
-        transactions.unshift(newTx);
-        localStorage.setItem('lw_transactions', JSON.stringify(transactions));
-        refreshAppViews();
+        const newTx = {
+          id: generateUUID(),
+          walletId: selectedWalletId,
+          categoryId: selectedCategoryId,
+          type: currentTxType,
+          amount: amount,
+          note: note,
+          user: currentUser,
+          date: txDateObj.toISOString()
+        };
+
+        if (isCloudSyncActive && db) {
+          await db.collection('transactions').doc(newTx.id).set(newTx);
+        } else {
+          transactions.unshift(newTx);
+          localStorage.setItem('lw_transactions', JSON.stringify(transactions));
+          refreshAppViews();
+        }
       }
 
       closeTransactionModal();
     }
 
+    // PANEL DE CONFIGURACIÓN
     function openSettingsModal() {
       document.getElementById('settingsExchangeRateInput').value = exchangeRate;
       renderSettingsWallets();
@@ -1390,13 +1615,17 @@
       document.getElementById('tcBadge').innerText = `TC: Bs ${exchangeRate.toFixed(2)}`;
     }
 
-    function saveExchangeRate() {
+    async function saveExchangeRate() {
       const val = parseFloat(document.getElementById('settingsExchangeRateInput').value);
       if (val && val > 0) {
         exchangeRate = val;
-        localStorage.setItem('lw_tc', exchangeRate);
-        updateExchangeRateDisplay();
-        refreshAppViews();
+        if (isCloudSyncActive && db) {
+          await db.collection('settings').doc('config').set({ exchangeRate: val }, { merge: true });
+        } else {
+          localStorage.setItem('lw_tc', exchangeRate);
+          updateExchangeRateDisplay();
+          refreshAppViews();
+        }
       }
     }
 
@@ -1405,15 +1634,20 @@
       container.innerHTML = wallets.map(w => `
         <div class="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/5">
           <div class="flex items-center gap-2.5">
-            <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs" style="background-color: ${w.color}25; color: ${w.color};">
-              <i data-lucide="${w.icon}" class="w-3.5 h-3.5"></i>
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs" style="background-color: ${w.color}25; color: ${w.color};">
+              <i data-lucide="${w.icon}" class="w-4 h-4"></i>
             </div>
             <div>
               <p class="text-xs font-semibold text-white">${w.name}</p>
               <p class="text-[9px] text-white/40">Moneda: ${w.currency}</p>
             </div>
           </div>
-          <span class="text-[10px] px-1.5 py-0.5 rounded font-bold ${w.currency === 'USD' ? 'text-amber-300 bg-amber-400/10' : 'text-white/60 bg-white/5'}">${w.currency}</span>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] px-1.5 py-0.5 rounded font-bold ${w.currency === 'USD' ? 'text-amber-300 bg-amber-400/10' : 'text-white/60 bg-white/5'}">${w.currency}</span>
+            <button onclick="openEditWalletModal('${w.id}')" class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition">
+              <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
         </div>
       `).join('');
       lucide.createIcons();
@@ -1422,34 +1656,170 @@
     function renderSettingsCategories() {
       const container = document.getElementById('settingsCategoriesList');
       container.innerHTML = categories.map(c => `
-        <div class="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/5 border border-white/5">
-          <div class="w-5 h-5 rounded-md flex items-center justify-center text-[9px] shrink-0" style="background-color: ${c.color}25; color: ${c.color};">
-            <i data-lucide="${c.icon}" class="w-3.5 h-3.5"></i>
+        <div class="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/5">
+          <div class="flex items-center gap-2 truncate">
+            <div class="w-6 h-6 rounded-md flex items-center justify-center text-[10px] shrink-0" style="background-color: ${c.color}25; color: ${c.color};">
+              <i data-lucide="${c.icon}" class="w-3.5 h-3.5"></i>
+            </div>
+            <span class="text-xs truncate font-medium text-white/80">${c.name}</span>
           </div>
-          <span class="text-[11px] truncate font-medium text-white/80">${c.name}</span>
+          <button onclick="openEditCategoryModal('${c.id}')" class="p-1 rounded bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition shrink-0 ml-1">
+            <i data-lucide="edit-2" class="w-3 h-3"></i>
+          </button>
         </div>
       `).join('');
       lucide.createIcons();
     }
 
-    function openNewWalletModal() {
+    // MODAL DE BILLETERA: CREAR O EDITAR
+    function openCreateWalletModal() {
+      editingWalletId = null;
+      document.getElementById('walletModalTitle').innerText = 'Nueva Billetera';
+      document.getElementById('saveWalletBtnText').innerText = 'Crear Billetera';
       document.getElementById('newWalletName').value = '';
-      initWalletIconPicker();
+      document.getElementById('newWalletCurrency').value = 'BOB';
+      document.getElementById('newWalletColor').value = '#0A84FF';
+      selectWalletIcon(AVAILABLE_ICONS[0]);
       document.getElementById('createWalletModal').classList.remove('hidden');
     }
 
-    function closeNewWalletModal() {
-      document.getElementById('createWalletModal').classList.add('hidden');
+    function openEditWalletModal(walletId) {
+      const w = wallets.find(item => item.id === walletId);
+      if (!w) return;
+      editingWalletId = walletId;
+      document.getElementById('walletModalTitle').innerText = 'Editar Billetera';
+      document.getElementById('saveWalletBtnText').innerText = 'Guardar Cambios';
+      document.getElementById('newWalletName').value = w.name;
+      document.getElementById('newWalletCurrency').value = w.currency;
+      document.getElementById('newWalletColor').value = w.color;
+      selectWalletIcon(w.icon);
+      document.getElementById('createWalletModal').classList.remove('hidden');
     }
 
-    function initWalletIconPicker() {
-      const grid = document.getElementById('walletIconPickerGrid');
-      grid.innerHTML = AVAILABLE_ICONS.map(i => `
-        <button type="button" onclick="selectWalletIcon('${i}')" id="w-icon-btn-${i}" class="w-7 h-7 rounded-lg flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/60">
-          <i data-lucide="${i}" class="w-3.5 h-3.5"></i>
+    function closeWalletConfigModal() {
+      document.getElementById('createWalletModal').classList.add('hidden');
+      editingWalletId = null;
+    }
+
+    async function saveWalletSubmit() {
+      const name = document.getElementById('newWalletName').value.trim();
+      const currency = document.getElementById('newWalletCurrency').value;
+      const color = document.getElementById('newWalletColor').value;
+
+      if (!name) return;
+
+      const walletPayload = {
+        id: editingWalletId || generateUUID(),
+        name: name,
+        currency: currency,
+        icon: tempSelectedWalletIcon,
+        color: color
+      };
+
+      if (isCloudSyncActive && db) {
+        await db.collection('wallets').doc(walletPayload.id).set(walletPayload, { merge: true });
+      } else {
+        if (editingWalletId) {
+          const idx = wallets.findIndex(w => w.id === editingWalletId);
+          if (idx !== -1) wallets[idx] = walletPayload;
+        } else {
+          wallets.push(walletPayload);
+        }
+        localStorage.setItem('lw_wallets', JSON.stringify(wallets));
+        refreshAppViews();
+      }
+
+      closeWalletConfigModal();
+    }
+
+    // MODAL DE CATEGORÍA: CREAR O EDITAR
+    function openCreateCategoryModal(fromTransaction = false) {
+      editingCategoryId = null;
+      isCreatingFromTransaction = fromTransaction;
+      document.getElementById('categoryModalTitle').innerText = 'Nueva Categoría';
+      document.getElementById('saveCatBtnText').innerText = 'Guardar Categoría';
+      document.getElementById('newCatName').value = '';
+      document.getElementById('newCatType').value = currentTxType || 'expense';
+      document.getElementById('newCatColor').value = '#FF9F0A';
+      selectCatIcon(AVAILABLE_ICONS[0]);
+      document.getElementById('createCategoryModal').classList.remove('hidden');
+    }
+
+    function openEditCategoryModal(catId) {
+      const c = categories.find(item => item.id === catId);
+      if (!c) return;
+      editingCategoryId = catId;
+      isCreatingFromTransaction = false;
+      document.getElementById('categoryModalTitle').innerText = 'Editar Categoría';
+      document.getElementById('saveCatBtnText').innerText = 'Guardar Cambios';
+      document.getElementById('newCatName').value = c.name;
+      document.getElementById('newCatType').value = c.type;
+      document.getElementById('newCatColor').value = c.color;
+      selectCatIcon(c.icon);
+      document.getElementById('createCategoryModal').classList.remove('hidden');
+    }
+
+    function closeCategoryConfigModal() {
+      document.getElementById('createCategoryModal').classList.add('hidden');
+      editingCategoryId = null;
+    }
+
+    async function saveCategorySubmit() {
+      const name = document.getElementById('newCatName').value.trim();
+      const type = document.getElementById('newCatType').value;
+      const color = document.getElementById('newCatColor').value;
+
+      if (!name) return;
+
+      const catPayload = {
+        id: editingCategoryId || generateUUID(),
+        name: name,
+        type: type,
+        icon: tempSelectedCatIcon,
+        color: color
+      };
+
+      if (isCloudSyncActive && db) {
+        await db.collection('categories').doc(catPayload.id).set(catPayload, { merge: true });
+      } else {
+        if (editingCategoryId) {
+          const idx = categories.findIndex(c => c.id === editingCategoryId);
+          if (idx !== -1) categories[idx] = catPayload;
+        } else {
+          categories.push(catPayload);
+        }
+        localStorage.setItem('lw_cats', JSON.stringify(categories));
+        refreshAppViews();
+      }
+
+      closeCategoryConfigModal();
+
+      if (isCreatingFromTransaction) {
+        currentTxType = type;
+        setTxType(type);
+        selectedCategoryId = catPayload.id;
+        renderCategorySelectorGrid();
+      }
+    }
+
+    // CATÁLOGO DE ICONOS ERGONÓMICO Y ACCESIBLE (+60 ICONOS)
+    function initIconPickers() {
+      const wGrid = document.getElementById('walletIconPickerGrid');
+      wGrid.innerHTML = AVAILABLE_ICONS.map(i => `
+        <button type="button" onclick="selectWalletIcon('${i}')" id="w-icon-btn-${i}" class="w-11 h-11 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/60 transition active:scale-90">
+          <i data-lucide="${i}" class="w-5 h-5"></i>
         </button>
       `).join('');
+
+      const cGrid = document.getElementById('categoryIconPickerGrid');
+      cGrid.innerHTML = AVAILABLE_ICONS.map(i => `
+        <button type="button" onclick="selectCatIcon('${i}')" id="cat-icon-btn-${i}" class="w-11 h-11 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/60 transition active:scale-90">
+          <i data-lucide="${i}" class="w-5 h-5"></i>
+        </button>
+      `).join('');
+
       selectWalletIcon(AVAILABLE_ICONS[0]);
+      selectCatIcon(AVAILABLE_ICONS[0]);
     }
 
     function selectWalletIcon(icon) {
@@ -1458,54 +1828,11 @@
         const el = document.getElementById(`w-icon-btn-${i}`);
         if (el) {
           el.className = i === icon 
-            ? "w-7 h-7 rounded-lg flex items-center justify-center bg-accentBlue text-white border border-white/20 shadow"
-            : "w-7 h-7 rounded-lg flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/60";
+            ? "w-11 h-11 rounded-xl flex items-center justify-center bg-accentBlue text-white border border-white/30 shadow-lg shadow-accentBlue/40 scale-105"
+            : "w-11 h-11 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/60 transition active:scale-90";
         }
       });
       lucide.createIcons();
-    }
-
-    function createWalletSubmit() {
-      const name = document.getElementById('newWalletName').value.trim();
-      const currency = document.getElementById('newWalletCurrency').value;
-      const color = document.getElementById('newWalletColor').value;
-
-      if (!name) return;
-
-      const newWallet = {
-        id: 'w-' + Date.now(),
-        name: name,
-        currency: currency,
-        icon: tempSelectedWalletIcon,
-        color: color
-      };
-
-      wallets.push(newWallet);
-      localStorage.setItem('lw_wallets', JSON.stringify(wallets));
-      closeNewWalletModal();
-      refreshAppViews();
-      renderSettingsWallets();
-    }
-
-    function openCreateCategoryModal(fromTransaction = false) {
-      isCreatingFromTransaction = fromTransaction;
-      document.getElementById('newCatName').value = '';
-      initCategoryIconPicker();
-      document.getElementById('createCategoryModal').classList.remove('hidden');
-    }
-
-    function closeCreateCategoryModal() {
-      document.getElementById('createCategoryModal').classList.add('hidden');
-    }
-
-    function initCategoryIconPicker() {
-      const grid = document.getElementById('categoryIconPickerGrid');
-      grid.innerHTML = AVAILABLE_ICONS.map(i => `
-        <button type="button" onclick="selectCatIcon('${i}')" id="cat-icon-btn-${i}" class="w-7 h-7 rounded-lg flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/60">
-          <i data-lucide="${i}" class="w-3.5 h-3.5"></i>
-        </button>
-      `).join('');
-      selectCatIcon(AVAILABLE_ICONS[0]);
     }
 
     function selectCatIcon(icon) {
@@ -1514,45 +1841,11 @@
         const el = document.getElementById(`cat-icon-btn-${i}`);
         if (el) {
           el.className = i === icon 
-            ? "w-7 h-7 rounded-lg flex items-center justify-center bg-accentBlue text-white border border-white/20 shadow"
-            : "w-7 h-7 rounded-lg flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/60";
+            ? "w-11 h-11 rounded-xl flex items-center justify-center bg-accentBlue text-white border border-white/30 shadow-lg shadow-accentBlue/40 scale-105"
+            : "w-11 h-11 rounded-xl flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/60 transition active:scale-90";
         }
       });
       lucide.createIcons();
-    }
-
-    function initIconPickers() {
-      initCategoryIconPicker();
-      initWalletIconPicker();
-    }
-
-    function createCategorySubmit() {
-      const name = document.getElementById('newCatName').value.trim();
-      const type = document.getElementById('newCatType').value;
-      const color = document.getElementById('newCatColor').value;
-
-      if (!name) return;
-
-      const newCategory = {
-        id: 'cat-' + Date.now(),
-        name: name,
-        type: type,
-        icon: tempSelectedCatIcon,
-        color: color
-      };
-
-      categories.push(newCategory);
-      localStorage.setItem('lw_cats', JSON.stringify(categories));
-      closeCreateCategoryModal();
-      renderSettingsCategories();
-
-      if (isCreatingFromTransaction) {
-        currentTxType = type;
-        setTxType(type);
-        selectedCategoryId = newCategory.id;
-        renderCategorySelectorGrid();
-      }
-      refreshAppViews();
     }
   </script>
 </body>
