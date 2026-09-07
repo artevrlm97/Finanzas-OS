@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Finanzas OS</title>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Finanzas OS">
+  <meta name="theme-color" content="#08090D">
+
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='bgGrad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230D111A'/%3E%3Cstop offset='100%25' stop-color='%23050608'/%3E%3C/linearGradient%3E%3ClinearGradient id='iconGrad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230A84FF'/%3E%3Cstop offset='100%25' stop-color='%235E5CE6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' fill='url(%23bgGrad)'/%3E%3Crect x='64' y='64' width='384' height='384' rx='96' fill='url(%23iconGrad)'/%3E%3Cg fill='none' stroke='white' stroke-width='24' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='256 160 368 224 256 288 144 224 256 160'/%3E%3Cpath d='M144 272l112 64 112-64'/%3E%3Cpath d='M144 320l112 64 112-64'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='bgGrad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230D111A'/%3E%3Cstop offset='100%25' stop-color='%23050608'/%3E%3C/linearGradient%3E%3ClinearGradient id='iconGrad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230A84FF'/%3E%3Cstop offset='100%25' stop-color='%235E5CE6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' fill='url(%23bgGrad)'/%3E%3Crect x='64' y='64' width='384' height='384' rx='96' fill='url(%23iconGrad)'/%3E%3Cg fill='none' stroke='white' stroke-width='24' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='256 160 368 224 256 288 144 224 256 160'/%3E%3Cpath d='M144 272l112 64 112-64'/%3E%3Cpath d='M144 320l112 64 112-64'/%3E%3C/g%3E%3C/svg%3E">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#08090D',
+            glassCard: 'rgba(255, 255, 255, 0.035)',
+            glassBorder: 'rgba(255, 255, 255, 0.08)',
+            accentBlue: '#0A84FF',
+            accentRick: '#30D158',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #08090D;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(10, 132, 255, 0.10) 0px, transparent 40%),
+        radial-gradient(at 100% 100%, rgba(48, 209, 88, 0.07) 0px, transparent 40%);
+      background-attachment: fixed;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      color: #F5F5F7;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .liquid-glass {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .liquid-modal {
+      background: rgba(16, 18, 27, 0.94);
+      backdrop-filter: blur(35px);
+      -webkit-backdrop-filter: blur(35px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
+  </style>
+</head>
+<body class="min-h-screen pb-16 select-none text-sm">
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "TU_API_KEY",
+      authDomain: "TU_DOMINIO.firebaseapp.com",
+      projectId: "TU_PROJECT_ID",
+      storageBucket: "TU_BUCKET.appspot.com",
+      messagingSenderId: "TU_SENDER_ID",
+      appId: "TU_APP_ID"
+    };
+
+    let db = null;
+    let isCloudSyncActive = false;
+    try {
+      if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "TU_API_KEY") {
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.firestore();
+        db.enablePersistence({ synchronizeTabs: true }).catch(err => {
+          console.warn("Persistencia local:", err.code);
+        });
+        isCloudSyncActive = true;
+      }
+    } catch (e) {
+      console.warn("Modo local temporalmente activo.");
+    }
+  </script>
+
+  <header class="sticky top-0 z-40 border-b border-white/5 bg-black/50 backdrop-blur-xl px-3.5 py-2.5">
+    <div class="max-w-5xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-accentBlue to-indigo-500 flex items-center justify-center shadow-md shadow-accentBlue/20">
+          <i data-lucide="layers" class="w-4 h-4 text-white"></i>
+        </div>
+        <div>
+          <span class="font-bold tracking-tight text-sm block leading-none">Finanzas OS</span>
+          <span id="tcBadge" class="text-[10px] text-white/50 cursor-pointer hover:text-white transition mt-0.5 block" onclick="openSettingsModal()">TC: Bs 6.96</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div class="flex items-center bg-white/5 border border-white/10 rounded-full p-0.5 text-xs">
+          <button id="btnUserRick" onclick="setActiveUser('Rick')" class="px-2.5 py-1 rounded-full font-medium transition flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Rick
+          </button>
+          <button id="btnUserBlue" onclick="setActiveUser('Blue')" class="px-2.5 py-1 rounded-full font-medium transition flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> Blue
+          </button>
+        </div>
+
+        <button onclick="openSettingsModal()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/70">
+          <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-3.5 mt-4 space-y-4">
+
+    <section class="liquid-glass rounded-2xl p-4 relative overflow-hidden">
+      <div class="flex items-start justify-between gap-2">
+        <div>
+          <p class="text-[10px] uppercase tracking-wider text-white/40 font-semibold">Patrimonio Neto Total</p>
+          <div class="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 mt-0.5">
+            <h1 id="globalBalanceText" class="text-2xl sm:text-3xl font-extrabold tracking-tight">Bs 0.00</h1>
+            <span id="globalBalanceUSDText" class="text-xs font-semibold text-white/50">≈ $0.00 USD</span>
+          </div>
+        </div>
+
+        <div class="flex bg-white/5 border border-white/10 rounded-lg p-0.5 text-[11px]">
+          <button onclick="setGlobalTimeframe('7D')" class="tf-btn px-2 py-0.5 rounded font-medium text-white/60 hover:text-white" data-tf="7D">7D</button>
+          <button onclick="setGlobalTimeframe('1M')" class="tf-btn px-2 py-0.5 rounded font-medium text-white/60 hover:text-white" data-tf="1M">1M</button>
+          <button onclick="setGlobalTimeframe('1A')" class="tf-btn px-2 py-0.5 rounded font-medium text-white/60 hover:text-white" data-tf="1A">1A</button>
+          <button onclick="setGlobalTimeframe('MAX')" class="tf-btn px-2 py-0.5 rounded font-medium bg-white/15 text-white" data-tf="MAX">MAX</button>
+        </div>
+      </div>
+      
+      <div class="h-36 sm:h-48 mt-3 w-full">
+        <canvas id="globalWealthChart"></canvas>
+      </div>
+    </section>
+
+    <section>
+      <div class="flex items-center justify-between mb-2.5 px-0.5">
+        <h2 class="text-[11px] font-bold tracking-wider text-white/50 uppercase">Billeteras Compartidas</h2>
+        <button onclick="openNewWalletModal()" class="text-xs text-accentBlue flex items-center gap-1 font-medium hover:underline">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i> Nueva
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 lg:grid-cols-3 gap-2.5" id="walletsContainer"></div>
+    </section>
+  </main>
+
+  <div id="walletDetailModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="relative w-full max-w-2xl">
+      <div class="liquid-modal rounded-t-3xl sm:rounded-3xl w-full max-h-[92vh] sm:max-h-[88vh] overflow-y-auto p-4 sm:p-6 space-y-4 pb-24 sm:pb-8">
+        
+        <div class="flex items-center justify-between border-b border-white/10 pb-3">
+          <div class="flex items-center gap-2.5">
+            <div id="modalWalletIcon" class="w-9 h-9 rounded-xl flex items-center justify-center text-lg bg-white/10"></div>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <h3 id="modalWalletTitle" class="text-base sm:text-lg font-bold"></h3>
+                <span id="modalWalletCurrencyBadge" class="text-[9px] px-1.5 py-0.5 rounded font-semibold border"></span>
+              </div>
+              <p id="modalWalletBalance" class="text-xs font-semibold text-white/70"></p>
+            </div>
+          </div>
+          <button onclick="closeWalletModal()" class="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center">
+            <i data-lucide="x" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+          <button onclick="setWalletPeriodFilter('current')" id="periodBtn-current" class="whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-white/15 text-white">
+            Mes Actual
+          </button>
+          <button onclick="setWalletPeriodFilter('previous')" id="periodBtn-previous" class="whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold transition text-white/60 hover:text-white bg-white/5">
+            Mes Pasado
+          </button>
+          <button onclick="setWalletPeriodFilter('all')" id="periodBtn-all" class="whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold transition text-white/60 hover:text-white bg-white/5">
+            Histórico Total
+          </button>
+          <select id="walletMonthPicker" onchange="onWalletMonthPickerChange(this.value)" class="bg-[#141622] border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-accentBlue shrink-0"></select>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div class="bg-white/5 border border-white/5 rounded-xl p-2.5">
+            <p class="text-[9px] uppercase font-bold text-white/40">Gastos</p>
+            <p id="periodExpensesTotal" class="text-xs sm:text-sm font-extrabold text-rose-400 truncate mt-0.5">Bs 0.00</p>
+          </div>
+          <div class="bg-white/5 border border-white/5 rounded-xl p-2.5">
+            <p class="text-[9px] uppercase font-bold text-white/40">Ingresos</p>
+            <p id="periodIncomesTotal" class="text-xs sm:text-sm font-extrabold text-emerald-400 truncate mt-0.5">Bs 0.00</p>
+          </div>
+          <div class="bg-white/5 border border-white/5 rounded-xl p-2.5">
+            <p class="text-[9px] uppercase font-bold text-white/40">Flujo Neto</p>
+            <p id="periodNetFlow" class="text-xs sm:text-sm font-extrabold text-white truncate mt-0.5">Bs 0.00</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="bg-white/5 border border-white/10 rounded-xl p-3">
+            <span class="text-[10px] font-semibold text-white/50 uppercase">Evolución</span>
+            <div class="h-32 sm:h-36 mt-1">
+              <canvas id="walletHistoryChart"></canvas>
+            </div>
+          </div>
+          <div class="bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col">
+            <div class="flex justify-between items-center w-full">
+              <span class="text-[10px] font-semibold text-white/50 uppercase">Torta de Gastos</span>
+              <span id="piePeriodLabel" class="text-[9px] text-white/40">Mes Actual</span>
+            </div>
+            <div class="h-32 sm:h-36 w-full mt-1 flex items-center justify-center">
+              <canvas id="walletPieChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center pt-1">
+          <h4 class="text-[11px] font-bold uppercase tracking-wider text-white/50">Movimientos</h4>
+          <span class="text-[10px] text-white/40 font-medium">Pulse '+' para registrar</span>
+        </div>
+
+        <div id="walletTransactionsList" class="space-y-1.5 max-h-56 overflow-y-auto pr-0.5"></div>
+      </div>
+
+      <button onclick="openTransactionModal()" 
+              aria-label="Registrar movimiento" 
+              class="absolute bottom-5 right-5 sm:bottom-6 sm:right-6 w-14 h-14 rounded-full bg-accentBlue hover:bg-blue-600 active:scale-95 text-white shadow-xl shadow-accentBlue/35 border border-white/25 flex items-center justify-center transition-all duration-200 z-30 group cursor-pointer">
+        <i data-lucide="plus" class="w-6 h-6 stroke-[2.5] transition-transform duration-200 group-hover:rotate-90"></i>
+      </button>
+    </div>
+  </div>
+
+  <div id="transactionModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="liquid-modal rounded-t-3xl sm:rounded-3xl w-full max-w-md max-h-[92vh] overflow-y-auto p-4 sm:p-5 space-y-3.5">
+      <div class="flex justify-between items-center border-b border-white/10 pb-2.5">
+        <h3 class="font-bold text-base">Registrar Movimiento</h3>
+        <button onclick="closeTransactionModal()" class="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 bg-white/5 p-1 rounded-xl border border-white/10">
+        <button type="button" id="typeExpenseBtn" onclick="setTxType('expense')" class="py-1 rounded-lg text-xs font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30">Gasto</button>
+        <button type="button" id="typeIncomeBtn" onclick="setTxType('income')" class="py-1 rounded-lg text-xs font-semibold text-white/60">Ingreso</button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2.5">
+        <div>
+          <label class="text-[10px] text-white/50 uppercase font-semibold">Monto (<span id="txCurrencyLabel">Bs</span>)</label>
+          <input type="number" step="0.01" id="txAmount" placeholder="0.00" class="w-full mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-base font-bold outline-none focus:border-accentBlue text-white">
+        </div>
+        <div>
+          <label class="text-[10px] text-white/50 uppercase font-semibold">Fecha</label>
+          <button type="button" onclick="toggleAppleDatePicker()" id="appleDateTriggerBtn" class="w-full mt-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-2.5 py-2 text-xs font-medium flex items-center justify-between transition text-white">
+            <div class="flex items-center gap-1.5 truncate">
+              <i data-lucide="calendar" class="w-3.5 h-3.5 text-accentBlue shrink-0"></i>
+              <span id="appleDateDisplayLabel" class="truncate">Hoy</span>
+            </div>
+            <i data-lucide="chevron-down" id="appleDateChevron" class="w-3.5 h-3.5 text-white/40 transition-transform shrink-0"></i>
+          </button>
+          <input type="hidden" id="txDate" value="">
+        </div>
+      </div>
+
+      <div id="appleInlineCalendar" class="hidden bg-black/40 border border-white/10 rounded-2xl p-3 space-y-2">
+        <div class="flex items-center justify-between">
+          <button type="button" onclick="changeApplePickerMonth(-1)" class="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/70 hover:text-white transition">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+          </button>
+          <span id="applePickerMonthLabel" class="text-xs font-bold text-white tracking-wide"></span>
+          <button type="button" onclick="changeApplePickerMonth(1)" class="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/70 hover:text-white transition">
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-semibold text-white/35">
+          <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+        </div>
+
+        <div id="applePickerDaysGrid" class="grid grid-cols-7 gap-1"></div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-white/5 text-[11px]">
+          <button type="button" onclick="setAppleDateShortcut('yesterday')" class="text-white/50 hover:text-white transition">Ayer</button>
+          <button type="button" onclick="setAppleDateShortcut('today')" class="text-accentBlue font-semibold hover:underline">Hoy</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <label class="text-[10px] text-white/50 uppercase font-semibold">Categoría</label>
+          <button type="button" onclick="openCreateCategoryModal(true)" class="text-[11px] text-accentBlue hover:underline flex items-center gap-0.5 font-medium">
+            <i data-lucide="plus" class="w-3 h-3"></i> Nueva
+          </button>
+        </div>
+        <div id="categoryCardsGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-1.5 max-h-40 overflow-y-auto p-1.5 bg-black/30 rounded-xl border border-white/5"></div>
+      </div>
+
+      <div>
+        <label class="text-[10px] text-white/50 uppercase font-semibold">Nota o Referencia</label>
+        <input type="text" id="txNote" placeholder="Ej. Taxi, farmacia, supermercado..." class="w-full mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:border-accentBlue text-white">
+      </div>
+
+      <button onclick="saveTransaction()" class="w-full bg-accentBlue hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl text-sm transition mt-1 shadow-md">
+        Guardar Transacción
+      </button>
+    </div>
+  </div>
+
+  <div id="settingsModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="liquid-modal rounded-t-3xl sm:rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-4">
+      <div class="flex justify-between items-center border-b border-white/10 pb-3">
+        <h3 class="font-bold text-base flex items-center gap-2">
+          <i data-lucide="sliders" class="w-4 h-4 text-accentBlue"></i> Configuración
+        </h3>
+        <button onclick="closeSettingsModal()" class="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+
+      <div class="bg-white/5 border border-white/10 rounded-xl p-3 space-y-1.5">
+        <label class="text-[10px] font-bold uppercase text-white/50">Tipo de Cambio</label>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-medium">1 USD = Bs</span>
+          <input type="number" step="0.01" id="settingsExchangeRateInput" class="w-24 bg-black/40 border border-white/15 rounded-lg px-2.5 py-1 text-sm font-bold text-center outline-none focus:border-accentBlue text-white">
+          <button onclick="saveExchangeRate()" class="bg-accentBlue text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition hover:bg-blue-600">Guardar</button>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <div class="flex justify-between items-center">
+          <h4 class="text-[10px] font-bold uppercase text-white/50">Billeteras Registradas</h4>
+          <button onclick="openNewWalletModal()" class="text-xs text-accentBlue hover:underline flex items-center gap-1 font-medium">
+            <i data-lucide="plus" class="w-3 h-3"></i> Crear Billetera
+          </button>
+        </div>
+        <div id="settingsWalletsList" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
+      </div>
+
+      <div class="space-y-2 pt-1">
+        <div class="flex justify-between items-center">
+          <h4 class="text-[10px] font-bold uppercase text-white/50">Categorías Disponibles</h4>
+          <button onclick="openCreateCategoryModal(false)" class="text-xs text-accentBlue hover:underline flex items-center gap-1 font-medium">
+            <i data-lucide="plus" class="w-3 h-3"></i> Crear Categoría
+          </button>
+        </div>
+        <div id="settingsCategoriesList" class="grid grid-cols-2 gap-1.5 max-h-44 overflow-y-auto p-1 bg-black/20 rounded-xl"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="createWalletModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="liquid-modal rounded-t-3xl sm:rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-5 space-y-3">
+      <div class="flex justify-between items-center border-b border-white/10 pb-2.5">
+        <h3 class="font-bold text-base">Nueva Billetera</h3>
+        <button onclick="closeNewWalletModal()" class="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+
+      <div>
+        <label class="text-[10px] text-white/50 uppercase font-semibold">Nombre</label>
+        <input type="text" id="newWalletName" placeholder="Ej. Negocios, Inversión" class="w-full mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:border-accentBlue text-white">
+      </div>
+
+      <div class="grid grid-cols-2 gap-2.5">
+        <div>
+          <label class="text-[10px] text-white/50 uppercase font-semibold">Moneda</label>
+          <select id="newWalletCurrency" class="w-full mt-1 bg-[#141622] border border-white/10 rounded-xl px-2.5 py-2 text-xs outline-none text-white">
+            <option value="BOB">Bolivianos (Bs)</option>
+            <option value="USD">Dólares ($ USD)</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[10px] text-white/50 uppercase font-semibold">Color</label>
+          <div class="flex items-center gap-2 mt-1">
+            <input type="color" id="newWalletColor" value="#0A84FF" class="bg-transparent border-0 w-8 h-8 rounded-lg cursor-pointer">
+            <span class="text-xs text-white/60">Acento</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="text-[10px] text-white/50 uppercase font-semibold">Ícono (+60 disponibles)</label>
+        <div id="walletIconPickerGrid" class="grid grid-cols-8 gap-1.5 mt-1.5 max-h-32 overflow-y-auto p-2 bg-white/5 rounded-xl border border-white/10"></div>
+      </div>
+
+      <button onclick="createWalletSubmit()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 rounded-xl text-sm transition mt-1">
+        Crear Billetera
+      </button>
+    </div>
+  </div>
+
+  <div id="createCategoryModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="liquid-modal rounded-t-3xl sm:rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-5 space-y-3">
+      <div class="flex justify-between items-center border-b border-white/10 pb-2.5">
+        <h3 class="font-bold text-base">Nueva Categoría</h3>
+        <button onclick="closeCreateCategoryModal()" class="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+
+      <div>
+        <label class="text-[10px] text-white/50 uppercase font-semibold">Nombre</label>
+        <input type="text" id="newCatName" placeholder="Ej. Veterinaria, Licencias..." class="w-full mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm outline-none text-white focus:border-accentBlue">
+      </div>
+
+      <div class="grid grid-cols-2 gap-2.5">
+        <div>
+          <label class="text-[10px] text-white/50 uppercase font-semibold">Tipo</label>
+          <select id="newCatType" class="w-full mt-1 bg-[#141622] border border-white/10 rounded-xl px-2.5 py-2 text-xs outline-none text-white">
+            <option value="expense">Gasto</option>
+            <option value="income">Ingreso</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[10px] text-white/50 uppercase font-semibold">Color</label>
+          <div class="flex items-center gap-2 mt-1">
+            <input type="color" id="newCatColor" value="#FF9F0A" class="bg-transparent border-0 w-8 h-8 rounded-lg cursor-pointer">
+            <span class="text-xs text-white/60">Acento</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="text-[10px] text-white/50 uppercase font-semibold">Seleccionar Ícono</label>
+        <div id="categoryIconPickerGrid" class="grid grid-cols-8 gap-1.5 mt-1.5 max-h-32 overflow-y-auto p-2 bg-white/5 rounded-xl border border-white/10"></div>
+      </div>
+
+      <button onclick="createCategorySubmit()" class="w-full bg-accentBlue hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl text-sm transition mt-1">
+        Guardar Categoría
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const AVAILABLE_ICONS = [
+      'car', 'zap', 'utensils', 'tv', 'sparkles', 'shopping-bag', 'heart', 'smile',
+      'party-popper', 'cross', 'cigarette', 'shopping-cart', 'wine', 'dog', 'gift',
+      'globe', 'receipt', 'shield', 'cpu', 'briefcase', 'wallet', 'coffee',
+      'fuel', 'plane', 'home', 'phone', 'wifi', 'camera', 'music', 'book',
+      'dumbbell', 'scissors', 'hammer', 'key', 'lock', 'map-pin', 'package',
+      'printer', 'tag', 'watch', 'anchor', 'award', 'battery-charging', 'bell',
+      'bike', 'bus', 'cloud', 'film', 'folder', 'gamepad-2', 'glasses',
+      'headphones', 'life-buoy', 'monitor', 'moon', 'radio', 'sun', 'truck',
+      'umbrella', 'video', 'wrench', 'credit-card', 'banknote', 'piggy-bank',
+      'trending-up', 'activity', 'bookmark', 'calendar', 'compass', 'feather'
+    ];
+
+    const DEFAULT_WALLETS = [
+      { id: 'vivir', name: 'Vivir', currency: 'BOB', icon: 'home', color: '#0A84FF' },
+      { id: 'deudas', name: 'Deudas', currency: 'BOB', icon: 'receipt', color: '#FF453A' },
+      { id: 'extras_rick', name: 'Extras Rick', currency: 'BOB', icon: 'user', color: '#30D158' },
+      { id: 'extras_blue', name: 'Extras Blue', currency: 'BOB', icon: 'heart', color: '#BF5AF2' },
+      { id: 'ahorro', name: 'Ahorro', currency: 'USD', icon: 'shield', color: '#FFD60A' }
+    ];
+
+    const DEFAULT_CATEGORIES = [
+      { id: 'taxi', name: 'Taxi', type: 'expense', icon: 'car', color: '#FF9F0A' },
+      { id: 'luz', name: 'Luz', type: 'expense', icon: 'zap', color: '#FFD60A' },
+      { id: 'comida', name: 'Comida', type: 'expense', icon: 'utensils', color: '#FF453A' },
+      { id: 'streaming', name: 'Streaming Doña Claudia', type: 'expense', icon: 'tv', color: '#BF5AF2' },
+      { id: 'limpieza', name: 'Insumos Limpieza', type: 'expense', icon: 'sparkles', color: '#64D2FF' },
+      { id: 'shopping', name: 'Shopping', type: 'expense', icon: 'shopping-bag', color: '#FF375F' },
+      { id: 'makeup', name: 'Makeup', type: 'expense', icon: 'smile', color: '#FF6482' },
+      { id: 'personal', name: 'Cuidado Personal', type: 'expense', icon: 'heart', color: '#AC8E68' },
+      { id: 'entretenimiento', name: 'Entretenimiento', type: 'expense', icon: 'party-popper', color: '#5E5CE6' },
+      { id: 'diseca', name: 'Diseca', type: 'expense', icon: 'receipt', color: '#98989D' },
+      { id: 'salud', name: 'Salud', type: 'expense', icon: 'cross', color: '#30D158' },
+      { id: 'tabaco', name: 'Tabaco y Vape', type: 'expense', icon: 'cigarette', color: '#8E8E93' },
+      { id: 'supermercado', name: 'Supermercado', type: 'expense', icon: 'shopping-cart', color: '#32D74B' },
+      { id: 'delicor', name: 'Delicor', type: 'expense', icon: 'wine', color: '#AF52DE' },
+      { id: 'coco', name: 'Coco (Perro)', type: 'expense', icon: 'dog', color: '#E0A367' },
+      { id: 'bonos', name: 'Bonos', type: 'expense', icon: 'gift', color: '#FFD60A' },
+      { id: 'servicios_online', name: 'Servicios Online', type: 'expense', icon: 'globe', color: '#0A84FF' },
+      { id: 'impuestos', name: 'Impuestos', type: 'expense', icon: 'receipt', color: '#FF453A' },
+      { id: 'seguros', name: 'Seguros de Salud', type: 'expense', icon: 'shield', color: '#30D158' },
+      { id: 'restotech', name: 'Restotech', type: 'expense', icon: 'cpu', color: '#64D2FF' },
+      { id: 'negocios', name: 'Negocios', type: 'income', icon: 'briefcase', color: '#30D158' },
+      { id: 'otros', name: 'Otros', type: 'income', icon: 'wallet', color: '#0A84FF' }
+    ];
+
+    let currentUser = 'Rick';
+    let exchangeRate = 6.96;
+    let wallets = [...DEFAULT_WALLETS];
+    let categories = [...DEFAULT_CATEGORIES];
+    let transactions = [];
+    let selectedWalletId = null;
+    let currentTxType = 'expense';
+    let selectedCategoryId = null;
+
+    let currentWalletPeriod = 'current';
+    let tempSelectedCatIcon = AVAILABLE_ICONS[0];
+    let tempSelectedWalletIcon = AVAILABLE_ICONS[0];
+    let isCreatingFromTransaction = false;
+
+    // Estado del Calendario Estilo Apple
+    let applePickerDate = new Date();
+    let applePickerViewYear = applePickerDate.getFullYear();
+    let applePickerViewMonth = applePickerDate.getMonth();
+    let isAppleDatePickerOpen = false;
+
+    let globalChartInstance = null;
+    let walletHistoryChartInstance = null;
+    let walletPieChartInstance = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      setupDataSync();
+      initIconPickers();
+      setActiveUser('Rick');
+      updateExchangeRateDisplay();
+      renderWallets();
+      setAppleDate(new Date());
+    });
+
+    function setActiveUser(user) {
+      currentUser = user;
+      const rickBtn = document.getElementById('btnUserRick');
+      const blueBtn = document.getElementById('btnUserBlue');
+      if (user === 'Rick') {
+        rickBtn.className = "px-2.5 py-1 rounded-full font-medium transition flex items-center gap-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+        blueBtn.className = "px-2.5 py-1 rounded-full font-medium transition flex items-center gap-1 text-white/50";
+      } else {
+        blueBtn.className = "px-2.5 py-1 rounded-full font-medium transition flex items-center gap-1 bg-sky-500/20 text-sky-400 border border-sky-500/30";
+        rickBtn.className = "px-2.5 py-1 rounded-full font-medium transition flex items-center gap-1 text-white/50";
+      }
+    }
+
+    function loadState() {
+      const storedTC = localStorage.getItem('lw_tc');
+      if (storedTC) exchangeRate = parseFloat(storedTC);
+
+      const storedWallets = localStorage.getItem('lw_wallets');
+      if (storedWallets) wallets = JSON.parse(storedWallets);
+
+      const storedCats = localStorage.getItem('lw_cats');
+      if (storedCats) categories = JSON.parse(storedCats);
+    }
+
+    function setupDataSync() {
+      if (isCloudSyncActive && db) {
+        db.collection('transactions').orderBy('date', 'desc').onSnapshot(snapshot => {
+          transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          refreshAppViews();
+        });
+      } else {
+        const storedTxs = localStorage.getItem('lw_transactions');
+        transactions = storedTxs ? JSON.parse(storedTxs) : generateMockData();
+        refreshAppViews();
+      }
+    }
+
+    function generateMockData() {
+      const list = [];
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+
+      wallets.forEach(w => {
+        const isUSD = w.currency === 'USD';
+        list.push({
+          id: 'tx-cm-1-' + Math.random(),
+          walletId: w.id,
+          categoryId: 'negocios',
+          type: 'income',
+          amount: isUSD ? 2500 : 14000,
+          date: new Date(currentYear, currentMonth, 3).toISOString(),
+          note: 'Ingreso mensual',
+          user: 'Rick'
+        });
+        list.push({
+          id: 'tx-cm-2-' + Math.random(),
+          walletId: w.id,
+          categoryId: 'supermercado',
+          type: 'expense',
+          amount: isUSD ? 180 : 920,
+          date: new Date(currentYear, currentMonth, 5).toISOString(),
+          note: 'Despensa familiar',
+          user: 'Blue'
+        });
+      });
+      return list;
+    }
+
+    function refreshAppViews() {
+      renderWallets();
+      updateNetWorth();
+      renderGlobalChart('MAX');
+      if (selectedWalletId) {
+        populateMonthPickerOptions(selectedWalletId);
+        renderWalletDetail(selectedWalletId);
+      }
+      lucide.createIcons();
+    }
+
+    function renderWallets() {
+      const container = document.getElementById('walletsContainer');
+      container.innerHTML = wallets.map(w => {
+        const txs = transactions.filter(t => t.walletId === w.id);
+        const bal = txs.reduce((acc, t) => acc + (t.type === 'income' ? Number(t.amount) : -Number(t.amount)), 0);
+        const isUSD = w.currency === 'USD';
+        const formatted = isUSD 
+          ? `$${bal.toLocaleString('en-US', { minimumFractionDigits: 2 })}`
+          : `Bs ${bal.toLocaleString('es-BO', { minimumFractionDigits: 2 })}`;
+
+        return `
+          <div onclick="openWalletModal('${w.id}')" class="liquid-glass rounded-2xl p-3 sm:p-4 cursor-pointer hover:bg-white/[0.06] transition border border-white/5 relative group flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <div class="w-8 h-8 rounded-xl flex items-center justify-center text-xs" style="background-color: ${w.color}25; color: ${w.color};">
+                <i data-lucide="${w.icon}" class="w-4 h-4"></i>
+              </div>
+              <span class="text-[9px] px-1.5 py-0.5 rounded font-bold tracking-wider ${isUSD ? 'bg-amber-400/10 text-amber-300 border border-amber-400/20' : 'bg-white/5 text-white/50 border border-white/10'}">
+                ${w.currency}
+              </span>
+            </div>
+            <div class="mt-3">
+              <h3 class="text-xs font-medium text-white/70 truncate">${w.name}</h3>
+              <p class="text-base sm:text-xl font-extrabold tracking-tight text-white mt-0.5 truncate">${formatted}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function updateNetWorth() {
+      let totalInBOB = 0;
+      wallets.forEach(w => {
+        const txs = transactions.filter(t => t.walletId === w.id);
+        const bal = txs.reduce((acc, t) => acc + (t.type === 'income' ? Number(t.amount) : -Number(t.amount)), 0);
+        if (w.currency === 'USD') {
+          totalInBOB += (bal * exchangeRate);
+        } else {
+          totalInBOB += bal;
+        }
+      });
+
+      const totalInUSD = exchangeRate > 0 ? (totalInBOB / exchangeRate) : 0;
+      document.getElementById('globalBalanceText').innerText = `Bs ${totalInBOB.toLocaleString('es-BO', { minimumFractionDigits: 2 })}`;
+      document.getElementById('globalBalanceUSDText').innerText = `≈ $${totalInUSD.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD`;
+    }
+
+    function setGlobalTimeframe(tf) {
+      document.querySelectorAll('.tf-btn').forEach(btn => {
+        if (btn.getAttribute('data-tf') === tf) {
+          btn.className = "tf-btn px-2 py-0.5 rounded font-medium bg-white/15 text-white";
+        } else {
+          btn.className = "tf-btn px-2 py-0.5 rounded font-medium text-white/60 hover:text-white";
+        }
+      });
+      renderGlobalChart(tf);
+    }
+
+    function renderGlobalChart(timeframe) {
+      const ctx = document.getElementById('globalWealthChart').getContext('2d');
+      if (globalChartInstance) globalChartInstance.destroy();
+
+      const labels = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'];
+      const dataPoints = [41000, 42300, 41900, 44800];
+
+      const gradient = ctx.createLinearGradient(0, 0, 0, 150);
+      gradient.addColorStop(0, 'rgba(10, 132, 255, 0.35)');
+      gradient.addColorStop(1, 'rgba(10, 132, 255, 0.0)');
+
+      globalChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: dataPoints,
+            borderColor: '#0A84FF',
+            borderWidth: 2,
+            fill: true,
+            backgroundColor: gradient,
+            tension: 0.35,
+            pointRadius: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 9 } } },
+            y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 9 } } }
+          }
+        }
+      });
+    }
+
+    function openWalletModal(walletId) {
+      selectedWalletId = walletId;
+      currentWalletPeriod = 'current';
+      const wallet = wallets.find(w => w.id === walletId);
+      document.getElementById('modalWalletTitle').innerText = wallet.name;
+      document.getElementById('modalWalletIcon').innerHTML = `<i data-lucide="${wallet.icon}" style="color: ${wallet.color}"></i>`;
+      
+      const badge = document.getElementById('modalWalletCurrencyBadge');
+      badge.innerText = wallet.currency;
+      badge.className = wallet.currency === 'USD' 
+        ? "text-[9px] px-1.5 py-0.5 rounded font-bold bg-amber-400/10 text-amber-300 border-amber-400/20"
+        : "text-[9px] px-1.5 py-0.5 rounded font-bold bg-white/5 text-white/60 border-white/10";
+
+      populateMonthPickerOptions(walletId);
+      updatePeriodButtonStyles();
+      renderWalletDetail(walletId);
+      document.getElementById('walletDetailModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeWalletModal() {
+      document.getElementById('walletDetailModal').classList.add('hidden');
+      selectedWalletId = null;
+    }
+
+    function populateMonthPickerOptions(walletId) {
+      const picker = document.getElementById('walletMonthPicker');
+      const wTxs = transactions.filter(t => t.walletId === walletId);
+      
+      const monthMap = new Map();
+      wTxs.forEach(t => {
+        const d = new Date(t.date);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const label = d.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
+        monthMap.set(key, label);
+      });
+
+      const now = new Date();
+      const currentKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      if (!monthMap.has(currentKey)) {
+        monthMap.set(currentKey, now.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' }));
+      }
+
+      const sortedKeys = Array.from(monthMap.keys()).sort().reverse();
+      picker.innerHTML = `<option value="">Mes...</option>` + sortedKeys.map(k => `
+        <option value="${k}" ${currentWalletPeriod === k ? 'selected' : ''}>${monthMap.get(k)}</option>
+      `).join('');
+    }
+
+    function setWalletPeriodFilter(period) {
+      currentWalletPeriod = period;
+      document.getElementById('walletMonthPicker').value = "";
+      updatePeriodButtonStyles();
+      renderWalletDetail(selectedWalletId);
+    }
+
+    function onWalletMonthPickerChange(val) {
+      if (!val) return;
+      currentWalletPeriod = val;
+      updatePeriodButtonStyles();
+      renderWalletDetail(selectedWalletId);
+    }
+
+    function updatePeriodButtonStyles() {
+      const btnCur = document.getElementById('periodBtn-current');
+      const btnPrev = document.getElementById('periodBtn-previous');
+      const btnAll = document.getElementById('periodBtn-all');
+
+      btnCur.className = currentWalletPeriod === 'current'
+        ? "whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-white/15 text-white"
+        : "whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold transition text-white/60 hover:text-white bg-white/5";
+
+      btnPrev.className = currentWalletPeriod === 'previous'
+        ? "whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-white/15 text-white"
+        : "whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold transition text-white/60 hover:text-white bg-white/5";
+
+      btnAll.className = currentWalletPeriod === 'all'
+        ? "whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-white/15 text-white"
+        : "whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold transition text-white/60 hover:text-white bg-white/5";
+    }
+
+    function getFilteredTransactionsForWallet(walletId) {
+      const allWalletTxs = transactions.filter(t => t.walletId === walletId);
+      const now = new Date();
+
+      if (currentWalletPeriod === 'all') return allWalletTxs;
+
+      if (currentWalletPeriod === 'current') {
+        const curYear = now.getFullYear();
+        const curMonth = now.getMonth();
+        return allWalletTxs.filter(t => {
+          const d = new Date(t.date);
+          return d.getFullYear() === curYear && d.getMonth() === curMonth;
+        });
+      }
+
+      if (currentWalletPeriod === 'previous') {
+        const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const prevYear = prevDate.getFullYear();
+        const prevMonth = prevDate.getMonth();
+        return allWalletTxs.filter(t => {
+          const d = new Date(t.date);
+          return d.getFullYear() === prevYear && d.getMonth() === prevMonth;
+        });
+      }
+
+      if (currentWalletPeriod.includes('-')) {
+        const [targetYear, targetMonth] = currentWalletPeriod.split('-').map(Number);
+        return allWalletTxs.filter(t => {
+          const d = new Date(t.date);
+          return d.getFullYear() === targetYear && (d.getMonth() + 1) === targetMonth;
+        });
+      }
+
+      return allWalletTxs;
+    }
+
+    function renderWalletDetail(walletId) {
+      const wallet = wallets.find(w => w.id === walletId);
+      const isUSD = wallet.currency === 'USD';
+      const symbol = isUSD ? '$' : 'Bs';
+
+      const allWalletTxs = transactions.filter(t => t.walletId === walletId);
+      const totalBalance = allWalletTxs.reduce((acc, t) => acc + (t.type === 'income' ? Number(t.amount) : -Number(t.amount)), 0);
+      document.getElementById('modalWalletBalance').innerText = `Saldo total: ${symbol} ${totalBalance.toLocaleString(isUSD ? 'en-US' : 'es-BO', { minimumFractionDigits: 2 })}`;
+
+      const filteredTxs = getFilteredTransactionsForWallet(walletId);
+
+      const periodExpenses = filteredTxs
+        .filter(t => t.type === 'expense')
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+      const periodIncomes = filteredTxs
+        .filter(t => t.type === 'income')
+        .reduce((sum, t) => sum + Number(t.amount), 0);
+      const netFlow = periodIncomes - periodExpenses;
+
+      document.getElementById('periodExpensesTotal').innerText = `${symbol} ${periodExpenses.toFixed(2)}`;
+      document.getElementById('periodIncomesTotal').innerText = `${symbol} ${periodIncomes.toFixed(2)}`;
+      
+      const netFlowEl = document.getElementById('periodNetFlow');
+      netFlowEl.innerText = `${netFlow >= 0 ? '+' : ''}${symbol} ${netFlow.toFixed(2)}`;
+      netFlowEl.className = `text-xs sm:text-sm font-extrabold truncate mt-0.5 ${netFlow >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+
+      const pieLabelEl = document.getElementById('piePeriodLabel');
+      if (currentWalletPeriod === 'current') pieLabelEl.innerText = 'Mes Actual';
+      else if (currentWalletPeriod === 'previous') pieLabelEl.innerText = 'Mes Anterior';
+      else if (currentWalletPeriod === 'all') pieLabelEl.innerText = 'Histórico Total';
+      else {
+        const [y, m] = currentWalletPeriod.split('-');
+        const dateObj = new Date(parseInt(y), parseInt(m) - 1, 1);
+        pieLabelEl.innerText = dateObj.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
+      }
+
+      const listEl = document.getElementById('walletTransactionsList');
+      if (filteredTxs.length === 0) {
+        listEl.innerHTML = `<div class="p-6 text-center text-xs text-white/40">Sin movimientos en este período.</div>`;
+      } else {
+        const sorted = [...filteredTxs].sort((a, b) => new Date(b.date) - new Date(a.date));
+        let currentMonthHeader = '';
+        let listHTML = '';
+
+        sorted.forEach(t => {
+          const tDate = new Date(t.date);
+          const monthYearStr = tDate.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
+          const formattedHeader = monthYearStr.toUpperCase();
+
+          if (currentWalletPeriod === 'all' && formattedHeader !== currentMonthHeader) {
+            currentMonthHeader = formattedHeader;
+            listHTML += `
+              <div class="sticky top-0 bg-[#10121B]/95 backdrop-blur-md py-1 px-1 border-b border-white/5">
+                <span class="text-[10px] font-bold text-accentBlue tracking-wider">${currentMonthHeader}</span>
+              </div>
+            `;
+          }
+
+          const cat = categories.find(c => c.id === t.categoryId) || { name: 'Varios', icon: 'tag', color: '#999' };
+          const isInc = t.type === 'income';
+          const dayFormatted = tDate.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+
+          listHTML += `
+            <div class="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/5 hover:bg-white/[0.08] transition">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-xs" style="background-color: ${cat.color}25; color: ${cat.color};">
+                  <i data-lucide="${cat.icon}" class="w-3.5 h-3.5"></i>
+                </div>
+                <div class="truncate">
+                  <p class="text-xs font-semibold text-white truncate">${cat.name}</p>
+                  <p class="text-[10px] text-white/40 truncate">${dayFormatted} • ${t.user} • ${t.note || 'Sin nota'}</p>
+                </div>
+              </div>
+              <span class="text-xs font-bold shrink-0 ml-2 ${isInc ? 'text-emerald-400' : 'text-rose-400'}">
+                ${isInc ? '+' : '-'}${symbol} ${Number(t.amount).toFixed(2)}
+              </span>
+            </div>
+          `;
+        });
+        listEl.innerHTML = listHTML;
+      }
+
+      const histCtx = document.getElementById('walletHistoryChart').getContext('2d');
+      if (walletHistoryChartInstance) walletHistoryChartInstance.destroy();
+      walletHistoryChartInstance = new Chart(histCtx, {
+        type: 'line',
+        data: {
+          labels: ['S1', 'S2', 'S3', 'S4'],
+          datasets: [{
+            data: [totalBalance * 0.75, totalBalance * 0.85, totalBalance * 0.8, totalBalance],
+            borderColor: '#30D158',
+            borderWidth: 2,
+            tension: 0.3,
+            pointRadius: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 9 } } },
+            y: { display: false }
+          }
+        }
+      });
+
+      const pieCtx = document.getElementById('walletPieChart').getContext('2d');
+      if (walletPieChartInstance) walletPieChartInstance.destroy();
+
+      const expenseTxs = filteredTxs.filter(t => t.type === 'expense');
+      const catTotals = {};
+      expenseTxs.forEach(t => {
+        catTotals[t.categoryId] = (catTotals[t.categoryId] || 0) + Number(t.amount);
+      });
+
+      const pieLabels = Object.keys(catTotals).map(cid => (categories.find(c => c.id === cid) || {}).name || cid);
+      const pieData = Object.values(catTotals);
+      const pieColors = Object.keys(catTotals).map(cid => (categories.find(c => c.id === cid) || {}).color || '#8E8E93');
+
+      walletPieChartInstance = new Chart(pieCtx, {
+        type: 'doughnut',
+        data: {
+          labels: pieLabels.length ? pieLabels : ['Sin gastos'],
+          datasets: [{
+            data: pieData.length ? pieData : [1],
+            backgroundColor: pieColors.length ? pieColors : ['rgba(255,255,255,0.06)'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  if (!pieData.length) return 'Sin gastos';
+                  const val = context.parsed;
+                  const total = pieData.reduce((a, b) => a + b, 0);
+                  const pct = ((val / total) * 100).toFixed(1);
+                  return ` ${context.label}: ${symbol} ${val.toFixed(2)} (${pct}%)`;
+                }
+              }
+            }
+          },
+          cutout: '68%'
+        }
+      });
+
+      lucide.createIcons();
+    }
+
+    // GESTIÓN DEL SELECTOR DE FECHA ESTILO APPLE
+    function toggleAppleDatePicker() {
+      const cal = document.getElementById('appleInlineCalendar');
+      const chev = document.getElementById('appleDateChevron');
+      isAppleDatePickerOpen = !isAppleDatePickerOpen;
+      if (isAppleDatePickerOpen) {
+        cal.classList.remove('hidden');
+        chev.style.transform = 'rotate(180deg)';
+        renderAppleCalendar();
+      } else {
+        cal.classList.add('hidden');
+        chev.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    function changeApplePickerMonth(delta) {
+      applePickerViewMonth += delta;
+      if (applePickerViewMonth < 0) {
+        applePickerViewMonth = 11;
+        applePickerViewYear--;
+      } else if (applePickerViewMonth > 11) {
+        applePickerViewMonth = 0;
+        applePickerViewYear++;
+      }
+      renderAppleCalendar();
+    }
+
+    function renderAppleCalendar() {
+      const monthTitleEl = document.getElementById('applePickerMonthLabel');
+      const grid = document.getElementById('applePickerDaysGrid');
+      
+      const viewDate = new Date(applePickerViewYear, applePickerViewMonth, 1);
+      const monthName = viewDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+      monthTitleEl.innerText = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+
+      // Primer día de semana del mes (Lunes = 0, ..., Domingo = 6)
+      let firstDayIndex = viewDate.getDay() - 1;
+      if (firstDayIndex === -1) firstDayIndex = 6;
+
+      const daysInMonth = new Date(applePickerViewYear, applePickerViewMonth + 1, 0).getDate();
+      const daysInPrevMonth = new Date(applePickerViewYear, applePickerViewMonth, 0).getDate();
+
+      const today = new Date();
+      const isCurrentMonthView = today.getFullYear() === applePickerViewYear && today.getMonth() === applePickerViewMonth;
+
+      let html = '';
+
+      // Días del mes anterior
+      for (let i = firstDayIndex; i > 0; i--) {
+        const prevDay = daysInPrevMonth - i + 1;
+        html += `<div class="h-8 flex items-center justify-center text-xs text-white/15 cursor-default">${prevDay}</div>`;
+      }
+
+      // Días del mes actual
+      for (let day = 1; day <= daysInMonth; day++) {
+        const isSelected = applePickerDate.getFullYear() === applePickerViewYear &&
+                           applePickerDate.getMonth() === applePickerViewMonth &&
+                           applePickerDate.getDate() === day;
+        const isToday = isCurrentMonthView && today.getDate() === day;
+
+        let btnClass = "w-7 h-7 sm:w-8 sm:h-8 mx-auto rounded-full flex items-center justify-center text-xs transition cursor-pointer ";
+
+        if (isSelected) {
+          btnClass += "bg-accentBlue text-white font-bold shadow-md shadow-accentBlue/40 scale-105";
+        } else if (isToday) {
+          btnClass += "text-accentBlue font-bold ring-1 ring-accentBlue/60 hover:bg-white/10";
+        } else {
+          btnClass += "text-white/80 hover:bg-white/10";
+        }
+
+        html += `
+          <button type="button" onclick="selectAppleDate(${applePickerViewYear}, ${applePickerViewMonth}, ${day})" class="${btnClass}">
+            ${day}
+          </button>
+        `;
+      }
+
+      // Días del siguiente mes para completar las columnas
+      const totalRendered = firstDayIndex + daysInMonth;
+      const nextDays = (7 - (totalRendered % 7)) % 7;
+      for (let i = 1; i <= nextDays; i++) {
+        html += `<div class="h-8 flex items-center justify-center text-xs text-white/15 cursor-default">${i}</div>`;
+      }
+
+      grid.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    function selectAppleDate(year, month, day) {
+      applePickerDate = new Date(year, month, day, 12, 0, 0);
+      setAppleDate(applePickerDate);
+      toggleAppleDatePicker();
+    }
+
+    function setAppleDate(d) {
+      applePickerDate = d;
+      applePickerViewYear = d.getFullYear();
+      applePickerViewMonth = d.getMonth();
+
+      const iso = d.toISOString().split('T')[0];
+      document.getElementById('txDate').value = iso;
+
+      const now = new Date();
+      const isToday = now.toDateString() === d.toDateString();
+      const yesterday = new Date(now.getTime() - 86400000);
+      const isYesterday = yesterday.toDateString() === d.toDateString();
+
+      const labelEl = document.getElementById('appleDateDisplayLabel');
+      if (isToday) {
+        labelEl.innerText = 'Hoy';
+      } else if (isYesterday) {
+        labelEl.innerText = 'Ayer';
+      } else {
+        labelEl.innerText = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+      }
+    }
+
+    function setAppleDateShortcut(type) {
+      if (type === 'today') {
+        setAppleDate(new Date());
+      } else if (type === 'yesterday') {
+        setAppleDate(new Date(Date.now() - 86400000));
+      }
+      toggleAppleDatePicker();
+    }
+
+    function openTransactionModal() {
+      const wallet = wallets.find(w => w.id === selectedWalletId);
+      document.getElementById('txCurrencyLabel').innerText = wallet ? wallet.currency : 'Bs';
+      document.getElementById('txAmount').value = '';
+      document.getElementById('txNote').value = '';
+      
+      setAppleDate(new Date());
+      isAppleDatePickerOpen = false;
+      document.getElementById('appleInlineCalendar').classList.add('hidden');
+      document.getElementById('appleDateChevron').style.transform = 'rotate(0deg)';
+
+      renderCategorySelectorGrid();
+      document.getElementById('transactionModal').classList.remove('hidden');
+    }
+
+    function closeTransactionModal() {
+      document.getElementById('transactionModal').classList.add('hidden');
+    }
+
+    function setTxType(type) {
+      currentTxType = type;
+      const exp = document.getElementById('typeExpenseBtn');
+      const inc = document.getElementById('typeIncomeBtn');
+      if (type === 'expense') {
+        exp.className = "py-1 rounded-lg text-xs font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30";
+        inc.className = "py-1 rounded-lg text-xs font-semibold text-white/60";
+      } else {
+        inc.className = "py-1 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+        exp.className = "py-1 rounded-lg text-xs font-semibold text-white/60";
+      }
+      renderCategorySelectorGrid();
+    }
+
+    function renderCategorySelectorGrid() {
+      const container = document.getElementById('categoryCardsGrid');
+      const filtered = categories.filter(c => c.type === currentTxType);
+
+      if (filtered.length > 0 && (!selectedCategoryId || !filtered.some(c => c.id === selectedCategoryId))) {
+        selectedCategoryId = filtered[0].id;
+      }
+
+      container.innerHTML = filtered.map(cat => {
+        const isSel = cat.id === selectedCategoryId;
+        return `
+          <div onclick="selectCategoryForTx('${cat.id}')" class="flex flex-col items-center justify-center p-2 rounded-xl cursor-pointer transition border ${isSel ? 'border-accentBlue bg-white/10 shadow shadow-accentBlue/20 scale-[0.98]' : 'border-white/5 bg-white/5 hover:bg-white/[0.08]'}">
+            <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs mb-1" style="background-color: ${cat.color}25; color: ${cat.color};">
+              <i data-lucide="${cat.icon}" class="w-3.5 h-3.5"></i>
+            </div>
+            <span class="text-[10px] font-medium text-white/90 text-center truncate w-full">${cat.name}</span>
+          </div>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function selectCategoryForTx(catId) {
+      selectedCategoryId = catId;
+      renderCategorySelectorGrid();
+    }
+
+    async function saveTransaction() {
+      const amount = parseFloat(document.getElementById('txAmount').value);
+      const note = document.getElementById('txNote').value;
+      const dateVal = document.getElementById('txDate').value;
+
+      if (!amount || amount <= 0 || !selectedCategoryId) return;
+
+      const txDateObj = dateVal ? new Date(dateVal + 'T12:00:00') : new Date();
+
+      const newTx = {
+        walletId: selectedWalletId,
+        categoryId: selectedCategoryId,
+        type: currentTxType,
+        amount: amount,
+        note: note,
+        user: currentUser,
+        date: txDateObj.toISOString()
+      };
+
+      if (isCloudSyncActive && db) {
+        await db.collection('transactions').add(newTx);
+      } else {
+        newTx.id = 'tx-' + Date.now();
+        transactions.unshift(newTx);
+        localStorage.setItem('lw_transactions', JSON.stringify(transactions));
+        refreshAppViews();
+      }
+
+      closeTransactionModal();
+    }
+
+    function openSettingsModal() {
+      document.getElementById('settingsExchangeRateInput').value = exchangeRate;
+      renderSettingsWallets();
+      renderSettingsCategories();
+      document.getElementById('settingsModal').classList.remove('hidden');
+    }
+
+    function closeSettingsModal() {
+      document.getElementById('settingsModal').classList.add('hidden');
+    }
+
+    function updateExchangeRateDisplay() {
+      document.getElementById('tcBadge').innerText = `TC: Bs ${exchangeRate.toFixed(2)}`;
+    }
+
+    function saveExchangeRate() {
+      const val = parseFloat(document.getElementById('settingsExchangeRateInput').value);
+      if (val && val > 0) {
+        exchangeRate = val;
+        localStorage.setItem('lw_tc', exchangeRate);
+        updateExchangeRateDisplay();
+        refreshAppViews();
+      }
+    }
+
+    function renderSettingsWallets() {
+      const container = document.getElementById('settingsWalletsList');
+      container.innerHTML = wallets.map(w => `
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-white/5 border border-white/5">
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs" style="background-color: ${w.color}25; color: ${w.color};">
+              <i data-lucide="${w.icon}" class="w-3.5 h-3.5"></i>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-white">${w.name}</p>
+              <p class="text-[9px] text-white/40">Moneda: ${w.currency}</p>
+            </div>
+          </div>
+          <span class="text-[10px] px-1.5 py-0.5 rounded font-bold ${w.currency === 'USD' ? 'text-amber-300 bg-amber-400/10' : 'text-white/60 bg-white/5'}">${w.currency}</span>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function renderSettingsCategories() {
+      const container = document.getElementById('settingsCategoriesList');
+      container.innerHTML = categories.map(c => `
+        <div class="flex items-center gap-1.5 p-1.5 rounded-lg bg-white/5 border border-white/5">
+          <div class="w-5 h-5 rounded-md flex items-center justify-center text-[9px] shrink-0" style="background-color: ${c.color}25; color: ${c.color};">
+            <i data-lucide="${c.icon}" class="w-3.5 h-3.5"></i>
+          </div>
+          <span class="text-[11px] truncate font-medium text-white/80">${c.name}</span>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function openNewWalletModal() {
+      document.getElementById('newWalletName').value = '';
+      initWalletIconPicker();
+      document.getElementById('createWalletModal').classList.remove('hidden');
+    }
+
+    function closeNewWalletModal() {
+      document.getElementById('createWalletModal').classList.add('hidden');
+    }
+
+    function initWalletIconPicker() {
+      const grid = document.getElementById('walletIconPickerGrid');
+      grid.innerHTML = AVAILABLE_ICONS.map(i => `
+        <button type="button" onclick="selectWalletIcon('${i}')" id="w-icon-btn-${i}" class="w-7 h-7 rounded-lg flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/60">
+          <i data-lucide="${i}" class="w-3.5 h-3.5"></i>
+        </button>
+      `).join('');
+      selectWalletIcon(AVAILABLE_ICONS[0]);
+    }
+
+    function selectWalletIcon(icon) {
+      tempSelectedWalletIcon = icon;
+      AVAILABLE_ICONS.forEach(i => {
+        const el = document.getElementById(`w-icon-btn-${i}`);
+        if (el) {
+          el.className = i === icon 
+            ? "w-7 h-7 rounded-lg flex items-center justify-center bg-accentBlue text-white border border-white/20 shadow"
+            : "w-7 h-7 rounded-lg flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/60";
+        }
+      });
+      lucide.createIcons();
+    }
+
+    function createWalletSubmit() {
+      const name = document.getElementById('newWalletName').value.trim();
+      const currency = document.getElementById('newWalletCurrency').value;
+      const color = document.getElementById('newWalletColor').value;
+
+      if (!name) return;
+
+      const newWallet = {
+        id: 'w-' + Date.now(),
+        name: name,
+        currency: currency,
+        icon: tempSelectedWalletIcon,
+        color: color
+      };
+
+      wallets.push(newWallet);
+      localStorage.setItem('lw_wallets', JSON.stringify(wallets));
+      closeNewWalletModal();
+      refreshAppViews();
+      renderSettingsWallets();
+    }
+
+    function openCreateCategoryModal(fromTransaction = false) {
+      isCreatingFromTransaction = fromTransaction;
+      document.getElementById('newCatName').value = '';
+      initCategoryIconPicker();
+      document.getElementById('createCategoryModal').classList.remove('hidden');
+    }
+
+    function closeCreateCategoryModal() {
+      document.getElementById('createCategoryModal').classList.add('hidden');
+    }
+
+    function initCategoryIconPicker() {
+      const grid = document.getElementById('categoryIconPickerGrid');
+      grid.innerHTML = AVAILABLE_ICONS.map(i => `
+        <button type="button" onclick="selectCatIcon('${i}')" id="cat-icon-btn-${i}" class="w-7 h-7 rounded-lg flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/60">
+          <i data-lucide="${i}" class="w-3.5 h-3.5"></i>
+        </button>
+      `).join('');
+      selectCatIcon(AVAILABLE_ICONS[0]);
+    }
+
+    function selectCatIcon(icon) {
+      tempSelectedCatIcon = icon;
+      AVAILABLE_ICONS.forEach(i => {
+        const el = document.getElementById(`cat-icon-btn-${i}`);
+        if (el) {
+          el.className = i === icon 
+            ? "w-7 h-7 rounded-lg flex items-center justify-center bg-accentBlue text-white border border-white/20 shadow"
+            : "w-7 h-7 rounded-lg flex items-center justify-center bg-white/5 hover:bg-white/10 text-white/60";
+        }
+      });
+      lucide.createIcons();
+    }
+
+    function initIconPickers() {
+      initCategoryIconPicker();
+      initWalletIconPicker();
+    }
+
+    function createCategorySubmit() {
+      const name = document.getElementById('newCatName').value.trim();
+      const type = document.getElementById('newCatType').value;
+      const color = document.getElementById('newCatColor').value;
+
+      if (!name) return;
+
+      const newCategory = {
+        id: 'cat-' + Date.now(),
+        name: name,
+        type: type,
+        icon: tempSelectedCatIcon,
+        color: color
+      };
+
+      categories.push(newCategory);
+      localStorage.setItem('lw_cats', JSON.stringify(categories));
+      closeCreateCategoryModal();
+      renderSettingsCategories();
+
+      if (isCreatingFromTransaction) {
+        currentTxType = type;
+        setTxType(type);
+        selectedCategoryId = newCategory.id;
+        renderCategorySelectorGrid();
+      }
+      refreshAppViews();
+    }
+  </script>
+</body>
+</html>
