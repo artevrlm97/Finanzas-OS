@@ -838,9 +838,11 @@
     function lockApp() {
       sessionStorage.removeItem('finanzas_unlocked_user');
       isSessionAuthenticated = false;
+      isVerifyingPasscode = false;
       currentUser = null;
       enteredPasscode = '';
       updatePasscodeDots();
+      document.getElementById('lockScreenStatusText').innerText = 'Ingrese su código de acceso';
       document.getElementById('mainAppContent').style.display = 'none';
       document.getElementById('lockScreenOverlay').classList.remove('hidden');
     }
