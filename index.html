@@ -730,11 +730,47 @@
       })[character]);
     }
 
+    const APP_TIME_ZONE = 'America/La_Paz';
+    const boliviaDateFormatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: APP_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit'
+    });
+
     function localDateKey(date) {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
+      if (Number.isNaN(date.getTime())) return '';
+      const parts = Object.fromEntries(boliviaDateFormatter.formatToParts(date).map(part => [part.type, part.value]));
+      return `${parts.year}-${parts.month}-${parts.day}`;
+    }
+
+    function boliviaDateParts(date = new Date()) {
+      const [year, month, day] = localDateKey(date).split('-').map(Number);
+      return { year, month: month - 1, day };
+    }
+
+    function boliviaCalendarDate(year, month, day = 1, time = '12:00:00') {
+      const key = new Date(Date.UTC(year, month, day)).toISOString().slice(0, 10);
+      return new Date(`${key}T${time}-04:00`);
+    }
+
+    function formatBoliviaDate(date, options) {
+      return date.toLocaleDateString('es-ES', { ...options, timeZone: APP_TIME_ZONE });
+    }
+
+    // La fecha contable agrupa por día; la creación decide el orden dentro del día.
+    function transactionCreationMillis(transaction) {
+      const value = transaction.createdAt;
+      if (value && typeof value.toMillis === 'function') return value.toMillis();
+      if (value && typeof value.seconds === 'number') {
+        return value.seconds * 1000 + (value.nanoseconds || 0) / 1000000;
+      }
+      return (typeof value === 'number' ? value : Date.parse(value)) || 0;
+    }
+
+    function compareTransactionsNewestFirst(a, b) {
+      const dayA = localDateKey(new Date(a.date));
+      const dayB = localDateKey(new Date(b.date));
+      return dayB.localeCompare(dayA)
+        || transactionCreationMillis(b) - transactionCreationMillis(a)
+        || String(b.id || '').localeCompare(String(a.id || ''));
     }
 
     function sanitizeDecimalField(field) {
@@ -827,8 +863,8 @@
 
     // Calendario Apple
     let applePickerDate = new Date();
-    let applePickerViewYear = applePickerDate.getFullYear();
-    let applePickerViewMonth = applePickerDate.getMonth();
+    let applePickerViewYear = boliviaDateParts(applePickerDate).year;
+    let applePickerViewMonth = boliviaDateParts(applePickerDate).month;
     let isAppleDatePickerOpen = false;
 
     // Instancias de Chart.js
@@ -845,7 +881,7 @@
       setAppleDate(new Date());
 
       const now = new Date();
-      const firstDay = localDateKey(new Date(now.getFullYear(), now.getMonth(), 1));
+      const firstDay = localDateKey(now).slice(0, 7) + '-01';
       const todayStr = localDateKey(now);
       document.getElementById('reportCustomStartDate').value = firstDay;
       document.getElementById('reportCustomEndDate').value = todayStr;
@@ -1035,7 +1071,7 @@
 
         // Transacciones
         db.collection('transactions').orderBy('date', 'desc').onSnapshot((snapshot) => {
-          transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data({ serverTimestamps: 'estimate' }) }));
           refreshAppViews();
         });
 
@@ -1070,8 +1106,7 @@
     function generateMockData() {
       const list = [];
       const now = new Date();
-      const currentYear = now.getFullYear();
-      const currentMonth = now.getMonth();
+      const { year: currentYear, month: currentMonth } = boliviaDateParts(now);
 
       DEFAULT_WALLETS.forEach(w => {
         const isUSD = w.currency === 'USD';
@@ -1081,7 +1116,7 @@
           categoryId: DEFAULT_CATEGORIES[20].id, // Negocios
           type: 'income',
           amount: isUSD ? 2500 : 14000,
-          date: new Date(currentYear, currentMonth, 3).toISOString(),
+          date: boliviaCalendarDate(currentYear, currentMonth, 3).toISOString(),
           note: 'Ingreso mensual',
           user: 'Rick'
         });
@@ -1091,7 +1126,7 @@
           categoryId: DEFAULT_CATEGORIES[0].id, // Taxi
           type: 'expense',
           amount: isUSD ? 35 : 180,
-          date: new Date(currentYear, currentMonth, 4).toISOString(),
+          date: boliviaCalendarDate(currentYear, currentMonth, 4).toISOString(),
           note: 'Traslado aeropuerto',
           user: 'Rick'
         });
@@ -1101,7 +1136,7 @@
           categoryId: DEFAULT_CATEGORIES[12].id, // Supermercado
           type: 'expense',
           amount: isUSD ? 180 : 920,
-          date: new Date(currentYear, currentMonth, 5).toISOString(),
+          date: boliviaCalendarDate(currentYear, currentMonth, 5).toISOString(),
           note: 'Despensa familiar',
           user: 'Blue'
         });
@@ -1303,24 +1338,25 @@
       const now = new Date();
       let startDate = null;
       let endDate = null;
+      const { year, month, day } = boliviaDateParts(now);
 
       if (currentReportRange === 'current_month') {
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+        startDate = boliviaCalendarDate(year, month, 1, '00:00:00');
+        endDate = boliviaCalendarDate(year, month + 1, 0, '23:59:59.999');
       } else if (currentReportRange === 'prev_month') {
-        startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        endDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+        startDate = boliviaCalendarDate(year, month - 1, 1, '00:00:00');
+        endDate = boliviaCalendarDate(year, month, 0, '23:59:59.999');
       } else if (currentReportRange === 'last_30') {
-        startDate = new Date(now.getTime() - (30 * 86400000));
-        endDate = now;
+        startDate = boliviaCalendarDate(year, month, day - 29, '00:00:00');
+        endDate = boliviaCalendarDate(year, month, day, '23:59:59.999');
       } else if (currentReportRange === 'year') {
-        startDate = new Date(now.getFullYear(), 0, 1);
-        endDate = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+        startDate = boliviaCalendarDate(year, 0, 1, '00:00:00');
+        endDate = boliviaCalendarDate(year, 11, 31, '23:59:59.999');
       } else if (currentReportRange === 'custom') {
         const startVal = document.getElementById('reportCustomStartDate').value;
         const endVal = document.getElementById('reportCustomEndDate').value;
-        if (startVal) startDate = new Date(startVal + 'T00:00:00');
-        if (endVal) endDate = new Date(endVal + 'T23:59:59');
+        if (startVal) startDate = new Date(startVal + 'T00:00:00-04:00');
+        if (endVal) endDate = new Date(endVal + 'T23:59:59.999-04:00');
       }
 
       let filtered = transactions.filter(t => t.type === currentReportType);
@@ -1451,7 +1487,7 @@
 
       sortedAsc.forEach(t => {
         const d = new Date(t.date);
-        const key = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+        const key = formatBoliviaDate(d, { day: '2-digit', month: 'short', year: 'numeric' });
         const w = wallets.find(item => item.id === t.walletId);
         const isUSD = w && w.currency === 'USD';
         const val = isUSD ? (Number(t.amount) * exchangeRate) : Number(t.amount);
@@ -1488,13 +1524,13 @@
         return;
       }
 
-      const sorted = [...txList].sort((a, b) => new Date(b.date) - new Date(a.date));
+      const sorted = [...txList].sort(compareTransactionsNewestFirst);
       container.innerHTML = sorted.map(t => {
         const cat = categories.find(c => c.id === t.categoryId) || { name: 'Varios', icon: 'tag', color: '#999' };
         const wall = wallets.find(w => w.id === t.walletId) || { name: 'Billetera', currency: 'BOB' };
         const isInc = t.type === 'income';
         const d = new Date(t.date);
-        const dayFormatted = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+        const dayFormatted = formatBoliviaDate(d, { day: '2-digit', month: 'short', year: 'numeric' });
         const symbol = wall.currency === 'USD' ? '$' : 'Bs';
 
         return `
@@ -1565,14 +1601,14 @@
       transactions.filter(item => item.walletId === walletId).forEach(item => {
         const date = new Date(item.date);
         if (Number.isNaN(date.getTime())) return;
-        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        monthMap.set(key, date.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' }));
+        const key = localDateKey(date).slice(0, 7);
+        monthMap.set(key, formatBoliviaDate(date, { month: 'short', year: 'numeric' }));
       });
 
       const now = new Date();
-      const currentKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const currentKey = localDateKey(now).slice(0, 7);
       if (!monthMap.has(currentKey)) {
-        monthMap.set(currentKey, now.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' }));
+        monthMap.set(currentKey, formatBoliviaDate(now, { month: 'short', year: 'numeric' }));
       }
 
       const options = [...monthMap.keys()].sort().reverse().map(key => {
@@ -1613,12 +1649,11 @@
 
       if (currentWalletPeriod === 'all') return walletTransactions;
 
-      let targetYear = now.getFullYear();
-      let targetMonth = now.getMonth();
+      let { year: targetYear, month: targetMonth } = boliviaDateParts(now);
       if (currentWalletPeriod === 'previous') {
-        const previous = new Date(targetYear, targetMonth - 1, 1);
-        targetYear = previous.getFullYear();
-        targetMonth = previous.getMonth();
+        const previous = boliviaDateParts(boliviaCalendarDate(targetYear, targetMonth - 1, 1));
+        targetYear = previous.year;
+        targetMonth = previous.month;
       } else if (/^\d{4}-\d{2}$/.test(currentWalletPeriod)) {
         const [year, month] = currentWalletPeriod.split('-').map(Number);
         targetYear = year;
@@ -1627,7 +1662,7 @@
 
       return walletTransactions.filter(item => {
         const date = new Date(item.date);
-        return !Number.isNaN(date.getTime()) && date.getFullYear() === targetYear && date.getMonth() === targetMonth;
+        return localDateKey(date).slice(0, 7) === `${targetYear}-${String(targetMonth + 1).padStart(2, '0')}`;
       });
     }
 
@@ -1661,7 +1696,7 @@
       else if (currentWalletPeriod === 'all') periodLabel.textContent = 'Histórico total';
       else {
         const [year, month] = currentWalletPeriod.split('-').map(Number);
-        periodLabel.textContent = new Date(year, month - 1, 1).toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
+        periodLabel.textContent = formatBoliviaDate(boliviaCalendarDate(year, month - 1, 1), { month: 'short', year: 'numeric' });
       }
 
       const list = document.getElementById('walletTransactionsList');
@@ -1669,9 +1704,9 @@
         list.innerHTML = '<div class="p-6 text-center text-xs text-white/40">Sin movimientos en este período.</div>';
       } else {
         let currentHeader = '';
-        list.innerHTML = [...filteredTransactions].sort((a, b) => new Date(b.date) - new Date(a.date)).map(item => {
+        list.innerHTML = [...filteredTransactions].sort(compareTransactionsNewestFirst).map(item => {
           const date = new Date(item.date);
-          const monthHeader = date.toLocaleDateString('es-ES', { month: 'short', year: 'numeric' }).toUpperCase();
+          const monthHeader = formatBoliviaDate(date, { month: 'short', year: 'numeric' }).toUpperCase();
           let header = '';
           if (currentWalletPeriod === 'all' && monthHeader !== currentHeader) {
             currentHeader = monthHeader;
@@ -1683,7 +1718,7 @@
           const safeIcon = AVAILABLE_ICONS.includes(category.icon) ? category.icon : 'tag';
           const safeId = String(item.id).replace(/[^a-zA-Z0-9_-]/g, '');
           const isIncome = item.type === 'income';
-          const day = date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+          const day = formatBoliviaDate(date, { day: '2-digit', month: 'short' });
 
           return `${header}
             <div class="swipe-container relative overflow-hidden rounded-xl select-none">
@@ -1707,9 +1742,9 @@
       renderIcons();
       if (typeof window.Chart === 'undefined') return;
 
-      const chronological = [...filteredTransactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+      const chronological = [...filteredTransactions].sort((a, b) => compareTransactionsNewestFirst(b, a));
       let runningBalance = 0;
-      const historyLabels = chronological.map(item => new Date(item.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }));
+      const historyLabels = chronological.map(item => formatBoliviaDate(new Date(item.date), { day: '2-digit', month: 'short' }));
       const historyData = chronological.map(item => {
         const amount = Number(item.amount) || 0;
         runningBalance += item.type === 'income' ? amount : -amount;
@@ -1909,18 +1944,19 @@
       const monthTitleEl = document.getElementById('applePickerMonthLabel');
       const grid = document.getElementById('applePickerDaysGrid');
       
-      const viewDate = new Date(applePickerViewYear, applePickerViewMonth, 1);
-      const monthName = viewDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+      const viewDate = boliviaCalendarDate(applePickerViewYear, applePickerViewMonth, 1);
+      const monthName = formatBoliviaDate(viewDate, { month: 'long', year: 'numeric' });
       monthTitleEl.innerText = monthName.charAt(0).toUpperCase() + monthName.slice(1);
 
-      let firstDayIndex = viewDate.getDay() - 1;
+      let firstDayIndex = viewDate.getUTCDay() - 1;
       if (firstDayIndex === -1) firstDayIndex = 6;
 
-      const daysInMonth = new Date(applePickerViewYear, applePickerViewMonth + 1, 0).getDate();
-      const daysInPrevMonth = new Date(applePickerViewYear, applePickerViewMonth, 0).getDate();
+      const daysInMonth = new Date(Date.UTC(applePickerViewYear, applePickerViewMonth + 1, 0)).getUTCDate();
+      const daysInPrevMonth = new Date(Date.UTC(applePickerViewYear, applePickerViewMonth, 0)).getUTCDate();
 
-      const today = new Date();
-      const isCurrentMonthView = today.getFullYear() === applePickerViewYear && today.getMonth() === applePickerViewMonth;
+      const today = boliviaDateParts();
+      const selectedDate = boliviaDateParts(applePickerDate);
+      const isCurrentMonthView = today.year === applePickerViewYear && today.month === applePickerViewMonth;
 
       let html = '';
 
@@ -1930,10 +1966,10 @@
       }
 
       for (let day = 1; day <= daysInMonth; day++) {
-        const isSelected = applePickerDate.getFullYear() === applePickerViewYear &&
-                           applePickerDate.getMonth() === applePickerViewMonth &&
-                           applePickerDate.getDate() === day;
-        const isToday = isCurrentMonthView && today.getDate() === day;
+        const isSelected = selectedDate.year === applePickerViewYear &&
+                           selectedDate.month === applePickerViewMonth &&
+                           selectedDate.day === day;
+        const isToday = isCurrentMonthView && today.day === day;
 
         let btnClass = "w-7 h-7 sm:w-8 sm:h-8 mx-auto rounded-full flex items-center justify-center text-xs transition cursor-pointer ";
 
@@ -1959,28 +1995,29 @@
     }
 
     function selectAppleDate(year, month, day) {
-      applePickerDate = new Date(year, month, day, 12, 0, 0);
+      applePickerDate = boliviaCalendarDate(year, month, day);
       setAppleDate(applePickerDate);
       toggleAppleDatePicker();
     }
 
     function setAppleDate(d) {
       applePickerDate = d;
-      applePickerViewYear = d.getFullYear();
-      applePickerViewMonth = d.getMonth();
+      const parts = boliviaDateParts(d);
+      applePickerViewYear = parts.year;
+      applePickerViewMonth = parts.month;
 
-      const iso = d.toISOString().split('T')[0];
+      const iso = localDateKey(d);
       document.getElementById('txDate').value = iso;
 
       const now = new Date();
-      const isToday = now.toDateString() === d.toDateString();
+      const isToday = localDateKey(now) === iso;
       const yesterday = new Date(now.getTime() - 86400000);
-      const isYesterday = yesterday.toDateString() === d.toDateString();
+      const isYesterday = localDateKey(yesterday) === iso;
 
       const labelEl = document.getElementById('appleDateDisplayLabel');
       if (isToday) labelEl.innerText = 'Hoy';
       else if (isYesterday) labelEl.innerText = 'Ayer';
-      else labelEl.innerText = d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+      else labelEl.innerText = formatBoliviaDate(d, { day: '2-digit', month: 'short' });
     }
 
     function setAppleDateShortcut(type) {
@@ -2061,7 +2098,7 @@
 
       if (!Number.isFinite(amount) || amount <= 0 || !selectedCategoryId) return;
 
-      const txDateObj = dateVal ? new Date(dateVal + 'T12:00:00') : new Date();
+      const txDateObj = new Date((dateVal || localDateKey(new Date())) + 'T12:00:00-04:00');
 
       if (editingTxId) {
         if (isCloudSyncActive && db) {
@@ -2096,11 +2133,15 @@
           amount: amount,
           note: note,
           user: currentUser,
+          createdAt: new Date().toISOString(),
           date: txDateObj.toISOString()
         };
 
         if (isCloudSyncActive && db) {
-          await db.collection('transactions').doc(newTx.id).set(newTx);
+          await db.collection('transactions').doc(newTx.id).set({
+            ...newTx,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
         } else {
           transactions.unshift(newTx);
           localStorage.setItem('lw_transactions', JSON.stringify(transactions));
